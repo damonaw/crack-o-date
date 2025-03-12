@@ -97,12 +97,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Safely evaluate expressions
     function safeEval(expression) {
         if (!expression) return '';
-        
+
         try {
             // Make sure % is interpreted as modulus and not percent
             // Replace isolated % operators with JavaScript's modulo syntax
-            const cleanedExpression = expression.replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)');
-            
+            const cleanedExpression = expression
+                .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
+                .replace(/(\d+)\s*\(/g, '$1*(') // Handle implicit multiplication before parentheses
+                .replace(/\)\s*(\d+)/g, ')*$1') // Handle implicit multiplication after parentheses
+                .replace(/-\s*\(/g, '-1*('); // Handle negative sign before parentheses
+
             // Use Function for safer evaluation than eval
             return Function(`'use strict'; return (${cleanedExpression})`)();
         } catch (error) {
@@ -118,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return expression
             .replace(/\*/g, '×') // Multiplication sign
             .replace(/\//g, '÷') // Division sign
+            .replace(/%/g, ' mod ') // Modulus operator
+            .replace(/\(/g, '<span class="paren">(</span>') // Highlight parentheses
+            .replace(/\)/g, '<span class="paren">)</span>')
             .replace(/\^/g, '<sup>') // Start superscript for powers
             .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>'); // Close superscript tags
     }
