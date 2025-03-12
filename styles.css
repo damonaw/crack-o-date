@@ -653,3 +653,47 @@ footer {
     color: #2c3e50;
     font-weight: bold;
 }
+
+/* Modal responsiveness for mobile devices */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 90%;
+        padding: 1rem;
+    }
+    
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .modal-content .modal-body {
+        font-size: 0.9rem;
+    }
+    
+    .modal-content .modal-footer {
+        padding-top: 1rem;
+    }
+    
+    .rules-container, .shortcuts-container {
+        font-size: 0.9rem;
+    }
+    
+    .rules-section h3, .shortcuts-section h3 {
+        font-size: 1rem;
+    }
+    
+    .rules-list li, .shortcuts-list li {
+        padding: 0.5rem;
+    }
+    
+    .solution-item {
+        padding: 0.5rem;
+    }
+    
+    .solution-equation {
+        font-size: 1rem;
+    }
+    
+    .solution-points {
+        font-size: 0.9rem;
+    }
+}

@@ -745,18 +745,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="shortcuts-section">
                             <h3><i class="fas fa-keyboard"></i> Input Shortcuts</h3>
                             <ul class="shortcuts-list">
-                                <li><kbd>0</kbd>-<kbd>9</kbd> Add date digits</li>
-                                <li><kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> <kbd>%</kbd> <kbd>(</kbd> <kbd>)</kbd> <kbd>^</kbd> Add operators</li>
+                                <lable>Add date digits</lable>
+                                <li><kbd>0</kbd>-<kbd>9</kbd></li>
+                                <lable>Add operators</lable>
+                                <li><kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> <kbd>%</kbd> <kbd>(</kbd> <kbd>)</kbd> <kbd>^</kbd></li>
                             </ul>
                         </div>
                         
                         <div class="shortcuts-section">
                             <h3><i class="fas fa-mouse-pointer"></i> Navigation Shortcuts</h3>
                             <ul class="shortcuts-list">
-                                <li><kbd>Tab</kbd> Switch between left/right side</li>
-                                <li><kbd>Enter</kbd> Check equation</li>
-                                <li><kbd>Backspace</kbd> Remove last element</li>
-                                <li><kbd>Esc</kbd> Clear equation</li>
+                                <label>Switch between left/right side</label>
+                                <li><kbd>Tab</kbd></li>
+                                <label>Check equation</label>
+                                <li><kbd>Enter</kbd></li>
+                                <label>Remove last element</label>
+                                <li><kbd>Backspace</kbd></li>
+                                <label>Clear equation</label>
+                                <li><kbd>Esc</kbd></li>
                             </ul>
                         </div>
                     </div>
