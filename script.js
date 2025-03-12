@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add separator
     const separator1 = document.createElement('span');
-    separator1.textContent = ' / ';
+    separator1.textContent = '/';
     dateButtonsContainer.appendChild(separator1);
     
     // Add day digits
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add separator
     const separator2 = document.createElement('span');
-    separator2.textContent = ' / ';
+    separator2.textContent = '/';
     dateButtonsContainer.appendChild(separator2);
     
     // Add year digits
@@ -216,10 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Close button
             document.querySelector('#modal .close').onclick = closeModal;
-            
-            // OK button
-            document.getElementById('modal-ok').onclick = closeModal;
-            
+                        
             // Click outside to close
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -571,14 +568,14 @@ document.addEventListener('DOMContentLoaded', function() {
     difficultySelect.addEventListener('change', function() {
         currentDifficulty = this.value;
         document.getElementById('difficulty-info').textContent = difficultySettings[currentDifficulty].description;
-        
+
         // Save preference
         localStorage.setItem(`${storagePrefix}difficulty`, currentDifficulty);
-        
+
         // Reset the game when difficulty changes
         clearButton.click();
     });
-    
+
     // Load saved difficulty if available
     const savedDifficulty = localStorage.getItem(`${storagePrefix}difficulty`);
     if (savedDifficulty && difficultySettings[savedDifficulty]) {
@@ -774,5 +771,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     updateActiveSide();
     updateCurrentValues();
+    hideError();
     loadStats();
 });

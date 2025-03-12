@@ -86,14 +86,8 @@ h1 {
 }
 
 .date-display {
-    background-color: #fff;
-    padding: 1.25rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
     text-align: center;
     font-size: 1.1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border-left: 4px solid #3498db;
 }
 
 #current-date {
@@ -223,6 +217,11 @@ h1 {
     margin-bottom: 1.5rem;
 }
 
+.date-numbers span {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
 /* Equation builder */
 .equation-builder {
     display: flex;
@@ -289,9 +288,6 @@ h1 {
     border-radius: 8px;
     margin-bottom: 1.5rem;
     text-align: center;
-}
-
-.solutions-area {
 }
 
 /* Solutions area */
@@ -379,11 +375,6 @@ h1 {
     font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
-}
-
-.modal-footer {
-    margin-top: 1.5rem;
-    text-align: right;
 }
 
 /* Keyboard shortcuts modal styling */
@@ -667,10 +658,6 @@ footer {
     
     .modal-content .modal-body {
         font-size: 0.9rem;
-    }
-    
-    .modal-content .modal-footer {
-        padding-top: 1rem;
     }
     
     .rules-container, .shortcuts-container {
