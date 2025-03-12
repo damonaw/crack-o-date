@@ -763,14 +763,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         .map(solution => {
                             const leftFormatted = formatExpression(solution.left.replace(/\*\*/g, '^'));
                             const rightFormatted = formatExpression(solution.right.replace(/\*\*/g, '^'));
-                            
+
                             return `
                                 <div class="solution-item">
-                                    <span class="badge badge-${solution.difficulty}">${solution.difficulty}</span>
+                                    <div class="solution-header">
+                                        <p class="badge badge-${solution.difficulty}">${solution.difficulty}</p>
+                                        <p class="solution-date badge badge-${solution.difficulty}">${new Date(solution.timestamp).toLocaleDateString()}</p>
+                                        <strong class="solution-points">${solution.points} pts</strong>
+                                    </div>
                                     <div class="solution-equation">
                                         ${leftFormatted} = ${rightFormatted}
                                     </div>
-                                    <strong class="solution-points">${solution.points} pts</strong>
                                 </div>
                             `;
                         })

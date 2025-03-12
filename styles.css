@@ -26,6 +26,9 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    flex-direction: column;
+    align-items: center;
+
 }
 
 .navbar-brand {
@@ -33,15 +36,20 @@ body {
     font-size: 1.8rem;
     font-weight: 700;
     letter-spacing: 1px;
+    width: 100%;
     text-transform: uppercase;
-    margin-right: auto;
+    margin-bottom: 0.75rem;
+    margin-right: 0;
+    justify-content: center;
 }
 
 .navbar-nav {
     list-style: none;
     display: flex;
     align-items: center;
+    width: 100%;
     justify-content: center;
+
 }
 
 .nav-item {
@@ -297,6 +305,40 @@ h1 {
     border-top: 1px solid #ddd;
 }
 
+.solutions-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    color: #3498db;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.stat-label {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+}
+
 .solutions-list {
     list-style: none;
     margin-top: 1rem;
@@ -468,22 +510,9 @@ footer {
 /* Responsive design */
 @media (max-width: 768px) {
     .navbar {
-        flex-direction: column;
-        align-items: center;
         padding: 1rem;
     }
-    
-    .navbar-brand {
-        margin-bottom: 0.75rem;
-        margin-right: 0;
-        justify-content: center;
-    }
-    
-    .navbar-nav {
-        width: 100%;
-        justify-content: center;
-    }
-    
+
     .nav-item {
         margin: 0 0.5rem;
     }
@@ -501,7 +530,6 @@ footer {
         margin: 1rem 0;
     }
 }
-
 
 /* Rules modal styling */
 .rules-container {
@@ -604,7 +632,7 @@ footer {
     background-color: #f8f9fa;
     border-radius: 4px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     transition: transform 0.2s ease;
     overflow: hidden; /* Prevent horizontal scrollbar */
     max-width: 95%; /* Ensure it doesn't exceed the container width */
@@ -614,6 +642,13 @@ footer {
 .solution-item:hover {
     transform: translateX(5px);
     background-color: #ebedef;
+}
+
+.solution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
 .solution-equation {
@@ -682,5 +717,36 @@ footer {
     
     .solution-points {
         font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .modal-content {
+        max-width: 95%;
+        padding: 0.5rem;
+    }
+
+    .modal-content h2 {
+        font-size: 1.2rem;
+    }
+
+    .modal-content .modal-body {
+        font-size: 0.8rem;
+    }
+
+    .rules-container, .shortcuts-container {
+        font-size: 0.8rem;
+    }
+
+    .rules-section h3, .shortcuts-section h3 {
+        font-size: 0.9rem;
+    }
+
+    .rules-list li, .shortcuts-list li {
+        padding: 0.4rem;
+    }
+
+    .nav-link i {
+        display: none;
     }
 }
