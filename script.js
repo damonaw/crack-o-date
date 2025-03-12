@@ -260,6 +260,61 @@ document.addEventListener('DOMContentLoaded', function() {
         return points;
     }
     
+    // Save the user's solutions locally
+    function saveSolution(leftExpr, rightExpr, points) {
+        const storageKey = `${storagePrefix}solutions-${dateString}`;
+        try {
+            // Get existing solutions
+            let solutions = getSavedSolutions();
+
+            // Create a unique solution ID
+            const solutionId = `${leftExpr}=${rightExpr}`;
+
+            // Check if solution already exists
+            if (!solutions.some(sol => sol.id === solutionId)) {
+                solutions.push({
+                    id: solutionId,
+                    left: leftExpr,
+                    right: rightExpr,
+                    points: points,
+                    timestamp: Date.now(),
+                    difficulty: currentDifficulty
+                });
+
+                // Save back to local storage
+                localStorage.setItem(storageKey, JSON.stringify(solutions));
+
+                // Update stats
+                updateTotalPoints(points);
+                updateSolutionsCount(1);
+
+                // Update highest points if needed
+                if (points > highestPoints) {
+                    updateHighestPoints(points);
+                }
+
+                return true; // New solution saved
+            }
+
+            return false; // Solution already exists
+        } catch (error) {
+            console.warn('Failed to save solution to local storage:', error);
+            return false;
+        }
+    }
+
+    // Get saved solutions from local storage
+    function getSavedSolutions() {
+        const storageKey = `${storagePrefix}solutions-${dateString}`;
+        try {
+            const savedSolutions = localStorage.getItem(storageKey);
+            return savedSolutions ? JSON.parse(savedSolutions) : [];
+        } catch (error) {
+            console.warn('Failed to get solutions from local storage:', error);
+            return [];
+        }
+    }
+    
     // Local storage functions
     function getSavedSolutions() {
         const storageKey = `${storagePrefix}solutions-${dateString}`;
