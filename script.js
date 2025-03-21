@@ -37,7 +37,8 @@ const gameData = {
             left: leftExpression,
             right: rightExpression,
             points: points,
-            dateNumbers: window.dateNumbers.join('')
+            dateNumbers: window.dateNumbers.join(''),
+            hardMode: gameState.hardMode  // Add hard mode information
         };
         
         this.solutions.push(solution);
@@ -131,6 +132,7 @@ const modalContent = {
                                     <div class="solution-points">
                                         <i class="fas fa-star"></i>
                                         ${solution.points} points
+                                        ${solution.hardMode ? '<span class="hard-mode-badge"><i class="fas fa-skull"></i> Hard Mode</span>' : ''}
                                     </div>
                                     <button class="solution-share" aria-label="Share solution">
                                         <i class="fas fa-share-alt"></i>
@@ -359,6 +361,33 @@ const gameState = {
     currentMonth: new Date().getMonth(),
     currentYear: new Date().getFullYear(),
     selectedDate: new Date(),
+    hardMode: false,
+    beginnerMode: false,
+    darkMode: false,  // Add dark mode state
+    
+    // Load saved preferences
+    loadPreferences() {
+        const savedHardMode = localStorage.getItem('hardMode');
+        const savedBeginnerMode = localStorage.getItem('beginnerMode');
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedHardMode !== null) {
+            this.hardMode = savedHardMode === 'true';
+        }
+        if (savedBeginnerMode !== null) {
+            this.beginnerMode = savedBeginnerMode === 'true';
+        }
+        if (savedDarkMode !== null) {
+            this.darkMode = savedDarkMode === 'true';
+            document.body.classList.toggle('dark-mode', this.darkMode);
+        }
+    },
+    
+    // Save preferences
+    savePreferences() {
+        localStorage.setItem('hardMode', this.hardMode);
+        localStorage.setItem('beginnerMode', this.beginnerMode);
+        localStorage.setItem('darkMode', this.darkMode);
+    },
     
     // UI Helper Functions
     createButton(text, type) {
@@ -448,6 +477,12 @@ const gameState = {
         this.updateActiveSide();
         this.updateCurrentValues();
         hideMessage();
+        
+        // Update results display based on hard mode
+        const resultsRow = document.querySelector('.equation-values');
+        if (resultsRow) {
+            resultsRow.style.display = this.hardMode ? 'none' : 'flex';
+        }
     },
     
     addButtonToEquation(sourceButton) {
@@ -631,6 +666,20 @@ function updateEqualsSign(leftExpression, rightExpression) {
     const isValid = leftExpression && rightExpression && 
                    leftValue !== 'Error' && rightValue !== 'Error';
     equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
+}
+
+function updateOperatorVisibility() {
+    const operators = document.querySelectorAll('#operator-buttons .operator');
+    operators.forEach(operator => {
+        const type = operator.getAttribute('data-type');
+        if (gameState.beginnerMode) {
+            // In beginner mode, only show basic operators and parentheses
+            operator.style.display = ['basic-1', 'basic-2', 'grouping'].includes(type) ? 'flex' : 'none';
+        } else {
+            // Show all operators in normal mode
+            operator.style.display = 'flex';
+        }
+    });
 }
 
 // Game Logic Functions
@@ -840,6 +889,18 @@ function setupMenu() {
         <button class="menu-item" data-modal="calendar-modal">
             <i class="fas fa-calendar"></i> Play Previous Date
         </button>
+        <button class="menu-item" id="hard-mode-toggle">
+            <i class="fas fa-skull"></i> Hard Mode
+            <span class="toggle-indicator">${gameState.hardMode ? 'ON' : 'OFF'}</span>
+        </button>
+        <button class="menu-item" id="beginner-mode-toggle">
+            <i class="fas fa-graduation-cap"></i> Beginner Mode
+            <span class="toggle-indicator">${gameState.beginnerMode ? 'ON' : 'OFF'}</span>
+        </button>
+        <button class="menu-item" id="dark-mode-toggle">
+            <i class="fas fa-moon"></i> Dark Mode
+            <span class="toggle-indicator">${gameState.darkMode ? 'ON' : 'OFF'}</span>
+        </button>
     `;
 
     // Add menu items to header
@@ -861,7 +922,47 @@ function setupMenu() {
     });
 
     // Handle menu item clicks
-    menuItems.addEventListener('click', handleMenuItemClick(menuItems));
+    menuItems.addEventListener('click', (e) => {
+        const menuItem = e.target.closest('.menu-item');
+        if (menuItem) {
+            if (menuItem.id === 'hard-mode-toggle') {
+                gameState.hardMode = !gameState.hardMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.hardMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.hardMode);
+                gameState.updateGameState();
+                e.stopPropagation();
+            } else if (menuItem.id === 'beginner-mode-toggle') {
+                gameState.beginnerMode = !gameState.beginnerMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.beginnerMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.beginnerMode);
+                updateOperatorVisibility();
+                e.stopPropagation();
+            } else if (menuItem.id === 'dark-mode-toggle') {
+                gameState.darkMode = !gameState.darkMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.darkMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.darkMode);
+                document.body.classList.toggle('dark-mode', gameState.darkMode);
+                e.stopPropagation();
+            } else {
+                const modalType = menuItem.dataset.modal;
+                if (modalType === 'calendar-modal') {
+                    const calendarModal = document.getElementById('calendar-modal');
+                    calendarModal.classList.add('active');
+                    updateCalendar();
+                } else {
+                    showModal(modalType);
+                }
+                menuItems.classList.remove('active');
+                e.stopPropagation();
+            }
+        }
+    });
 
     // Handle modal close
     modalClose.addEventListener('click', () => {
@@ -990,7 +1091,7 @@ function formatSolutionForSharing(solution) {
     
     const left = solution.left.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
     const right = solution.right.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
-    return `${left} = ${right}\n${solution.points} points`;
+    return `${left} = ${right}\n${solution.points} points${solution.hardMode ? ' (Hard Mode)' : ''}`;
 }
 
 function copyToClipboard(text) {
@@ -1134,6 +1235,7 @@ function setupHistoryModal() {
                                     <div class="solution-points">
                                         <i class="fas fa-star"></i>
                                         ${solution.points} points
+                                        ${solution.hardMode ? '<span class="hard-mode-badge"><i class="fas fa-skull"></i> Hard Mode</span>' : ''}
                                     </div>
                                     ${solution.left && solution.right ? `
                                         <button class="solution-share" aria-label="Share solution">
@@ -1313,6 +1415,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set header date
     document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
     
+    // Load saved preferences
+    gameState.loadPreferences();
+    
     // Setup menu and modal
     setupMenu();
     setupCalendarModal();
@@ -1401,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeOperatorButtons();
         initializeDataManagement();
         setupKeyboardControls();
+        updateOperatorVisibility();
     }
     
     function initializeOperatorButtons() {

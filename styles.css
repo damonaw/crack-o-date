@@ -146,6 +146,7 @@
     cursor: pointer;
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .menu-item:hover {
@@ -1463,4 +1464,21 @@ body {
 #calendar-modal .calendar-nav:hover {
     background: var(--gray-100);
     color: var(--gray-700);
+}
+
+.hard-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    margin-left: var(--spacing-sm);
+    font-weight: 500;
+}
+
+.hard-mode-badge i {
+    font-size: 0.8em;
 }
