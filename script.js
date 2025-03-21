@@ -156,23 +156,62 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function addButtonToEquation(sourceButton) {
         const buttonType = sourceButton.classList.contains('number') ? 'number' : 'operator';
-        const newButton = createButton(sourceButton.textContent, buttonType);
+        const buttonText = sourceButton.textContent;
         
-        newButton.addEventListener('click', () => {
-            const currentSide = getActiveSide();
-            if (currentSide.lastElementChild === newButton) {
-                newButton.remove();
-                if (buttonType === 'number') {
-                    sourceButton.disabled = false;
-                    sourceButton.classList.remove('disabled');
-                    currentNumberIndex--;
-                }
-                updateCurrentValues();
-            }
-        });
+        // Check if it's a function operator (except factorial which goes after the number)
+        const isFunction = ['abs', 'log'].includes(buttonText);
         
-        getActiveSide().appendChild(newButton);
+        // Create the main button
+        const newButton = createButton(buttonText, buttonType);
+        
+        // If it's a function, also create and add the opening parenthesis
+        if (isFunction) {
+            const parenButton = createButton('(', 'operator');
+            parenButton.setAttribute('data-type', 'grouping');
+            
+            // Add click handler for both buttons
+            newButton.addEventListener('click', () => handleButtonRemoval(newButton, sourceButton, [parenButton]));
+            parenButton.addEventListener('click', () => handleButtonRemoval(parenButton, null, [newButton]));
+            
+            // Add both buttons to the equation
+            getActiveSide().appendChild(newButton);
+            getActiveSide().appendChild(parenButton);
+        } else {
+            // Regular click handler for non-function buttons
+            newButton.addEventListener('click', () => handleButtonRemoval(newButton, sourceButton));
+            getActiveSide().appendChild(newButton);
+        }
+        
         updateCurrentValues();
+    }
+    
+    // Helper function to handle button removal
+    function handleButtonRemoval(buttonToRemove, sourceButton, relatedButtons = []) {
+        const currentSide = getActiveSide();
+        if (currentSide.lastElementChild === buttonToRemove || 
+            relatedButtons.includes(currentSide.lastElementChild)) {
+            
+            // Remove all related buttons in reverse order
+            if (relatedButtons.length > 0) {
+                const allButtons = [buttonToRemove, ...relatedButtons];
+                for (let i = allButtons.length - 1; i >= 0; i--) {
+                    if (allButtons[i].parentNode === currentSide) {
+                        allButtons[i].remove();
+                    }
+                }
+            } else {
+                buttonToRemove.remove();
+            }
+            
+            // Re-enable source button if it's a number
+            if (sourceButton && sourceButton.classList.contains('number')) {
+                sourceButton.disabled = false;
+                sourceButton.classList.remove('disabled');
+                currentNumberIndex--;
+            }
+            
+            updateCurrentValues();
+        }
     }
     
     // === Initialization Functions ===
@@ -205,19 +244,92 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function initializeOperatorButtons() {
         const operators = [
-            '+', '-', '*', '/', '%', 
-            '(', ')', 
-            '^', '√',
-            '!', '|', '&',
-            'abs', 'log'
+            // Basic Operators (1 point)
+            { 
+                symbol: '+', 
+                type: 'basic-1',
+                tooltip: 'Addition\n2 + 3 = 5\nCombines two numbers together'
+            },
+            { 
+                symbol: '-', 
+                type: 'basic-1',
+                tooltip: 'Subtraction\n5 - 3 = 2\nFinds the difference between numbers'
+            },
+            
+            // Basic Operators (2 points)
+            { 
+                symbol: '*', 
+                type: 'basic-2',
+                tooltip: 'Multiplication\n4 × 5 = 20\nRepeated addition of a number'
+            },
+            { 
+                symbol: '/', 
+                type: 'basic-2',
+                tooltip: 'Division\n10 ÷ 2 = 5\nSplits a number into equal parts'
+            },
+            { 
+                symbol: '%', 
+                type: 'basic-2',
+                tooltip: 'Modulo\n7 mod 3 = 1\nFinds the remainder after division'
+            },
+            
+            // Grouping
+            { 
+                symbol: '(', 
+                type: 'grouping',
+                tooltip: 'Opening Parenthesis\n2 × (3 + 4) = 14\nGroups operations together'
+            },
+            { 
+                symbol: ')', 
+                type: 'grouping',
+                tooltip: 'Closing Parenthesis\n(2 + 3) × 4 = 20\nGroups operations together'
+            },
+            
+            // Advanced Operators (3 points)
+            { 
+                symbol: '^', 
+                type: 'advanced',
+                tooltip: 'Exponent\n2^3 = 8\nRaises a number to a power'
+            },
+            { 
+                symbol: '√', 
+                type: 'advanced',
+                tooltip: 'Square Root\n√16 = 4\nFinds the number that when squared equals input'
+            },
+            { 
+                symbol: '|', 
+                type: 'advanced',
+                tooltip: 'Bitwise OR\nExample: 5|3 = 7\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n7 = 111  (4 + 2 + 1)\n\nIf either bit is 1, result is 1\nLike combining two sets'
+            },
+            { 
+                symbol: '&', 
+                type: 'advanced',
+                tooltip: 'Bitwise AND\nExample: 5&3 = 1\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n1 = 001  (0 + 0 + 1)\n\nOnly if both bits are 1, result is 1\nLike finding what two sets share'
+            },
+            
+            // Function Operators (4 points)
+            { 
+                symbol: 'abs', 
+                type: 'function',
+                tooltip: 'Absolute Value\nExample: abs(-5) = 5\n\nParenthesis added automatically\nRemoves the negative sign\nReturns how far a number is from zero'
+            },
+            { 
+                symbol: 'log', 
+                type: 'function',
+                tooltip: 'Base-10 Logarithm\nExample: log(100) = 2\n\nParenthesis added automatically\nAnswers: "10 to what power gives this number?"\n\nlog(1000) = 3 because 10³ = 1000'
+            },
+            { 
+                symbol: '!', 
+                type: 'function',
+                tooltip: 'Factorial\nExample: 5! = 120\n\nMultiplies all whole numbers from 1 to n:\n5! = 5 × 4 × 3 × 2 × 1 = 120\n3! = 3 × 2 × 1 = 6\n1! = 1\n0! = 1 (by definition)'
+            }
         ];
         
         const container = document.getElementById('operator-buttons');
         operators.forEach(op => {
-            const btn = createButton(op, 'operator');
-            if (op.length > 1) {
-                btn.classList.add('function-operator');
-            }
+            const btn = createButton(op.symbol, 'operator');
+            btn.setAttribute('data-type', op.type);
+            btn.setAttribute('data-tooltip', op.tooltip);
             container.appendChild(btn);
         });
     }
