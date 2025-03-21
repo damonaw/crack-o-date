@@ -459,6 +459,12 @@
 .footer-content p {
     color: var(--gray-300);
     font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.footer-content p:hover {
+    transform: scale(1.1);
 }
 
 .footer-bottom {
@@ -1762,12 +1768,36 @@ body {
     margin-top: var(--spacing-xs);
 }
 
-/* Make heart clickable */
-.footer-content p {
-    cursor: pointer;
-    transition: transform 0.2s ease;
+/* Loading State */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    font-size: 1.2em;
+    color: var(--text-color);
 }
 
-.footer-content p:hover {
-    transform: scale(1.1);
+.loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    border: 2px solid var(--text-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error {
+    color: var(--error-color);
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1em;
 }

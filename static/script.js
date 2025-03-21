@@ -310,6 +310,51 @@ const modalContent = {
                 </div>
             `;
         }
+    },
+    'visitor-stats': {
+        title: 'Visitor Statistics',
+        content: async () => {
+            const stats = await visitorTracking.getStats() || JSON.parse(localStorage.getItem('visitor_stats') || '{}');
+            const today = new Date().toISOString().split('T')[0];
+            const todayStats = stats.daily_stats?.[today] || { total: 0, unique: 0 };
+            
+            return `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.total_visitors || 0}</span>
+                        <span class="stat-label">Total Visitors</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.unique_visitors || 0}</span>
+                        <span class="stat-label">Unique Visitors</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${todayStats.total}</span>
+                        <span class="stat-label">Today's Visitors</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${todayStats.unique}</span>
+                        <span class="stat-label">Today's Unique</span>
+                    </div>
+                </div>
+                <div class="stats-chart">
+                    <h3>Daily Visitors</h3>
+                    <div class="chart-container">
+                        ${Object.entries(stats.daily_stats || {})
+                            .sort((a, b) => b[0].localeCompare(a[0]))
+                            .slice(0, 7)
+                            .map(([date, data]) => `
+                                <div class="chart-bar">
+                                    <div class="bar-value" style="height: ${(data.unique / Math.max(...Object.values(stats.daily_stats).map(d => d.unique))) * 100}%">
+                                        <span class="bar-label">${data.unique}</span>
+                                    </div>
+                                    <span class="bar-date">${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            `;
+        }
     }
 };
 
@@ -995,17 +1040,47 @@ function showModal(type) {
         // Always reset the title first
         modalTitle.textContent = modalContent[type].title;
         
-        const content = typeof modalContent[type].content === 'function' 
-            ? modalContent[type].content()
-            : modalContent[type].content;
+        const content = modalContent[type].content;
+        
+        // Handle async content
+        if (typeof content === 'function') {
+            const result = content();
+            if (result instanceof Promise) {
+                modalBody.innerHTML = '<div class="loading">Loading...</div>';
+                result.then(asyncContent => {
+                    modalBody.innerHTML = asyncContent;
+                }).catch(error => {
+                    console.error('Error loading modal content:', error);
+                    modalBody.innerHTML = '<div class="error">Error loading content</div>';
+                });
+            } else {
+                modalBody.innerHTML = result;
+            }
+        } else {
+            modalBody.innerHTML = content;
+        }
             
         if (type === 'your-solutions') {
             const solutions = gameData.getTodaysSolutions();
             console.log('Today\'s solutions:', solutions);
         }
         
-        modalBody.innerHTML = content;
         modal.classList.add('active');
+        
+        // Add event listener for closing modal
+        const closeButton = modal.querySelector('.modal-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
     } catch (error) {
         console.error('Error showing modal:', error);
     }
@@ -1408,6 +1483,46 @@ function setupHistoryModal() {
     });
 }
 
+// Visitor tracking
+const visitorTracking = {
+    visitorId: localStorage.getItem('visitor_id') || crypto.randomUUID(),
+    
+    init() {
+        localStorage.setItem('visitor_id', this.visitorId);
+        this.trackVisit();
+    },
+    
+    async trackVisit() {
+        try {
+            const response = await fetch('/api/visitor', {
+                method: 'POST',
+                headers: {
+                    'X-Visitor-ID': this.visitorId
+                }
+            });
+            const data = await response.json();
+            this.updateStats(data);
+        } catch (error) {
+            console.error('Error tracking visitor:', error);
+        }
+    },
+    
+    async getStats() {
+        try {
+            const response = await fetch('/api/stats');
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting stats:', error);
+            return null;
+        }
+    },
+    
+    updateStats(data) {
+        // Store stats in localStorage for offline access
+        localStorage.setItem('visitor_stats', JSON.stringify(data));
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Set current year in footer
     document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -1429,6 +1544,19 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeUI();
     setupEventListeners();
     gameState.updateGameState();
+
+    // Initialize visitor tracking
+    visitorTracking.init();
+
+    // Add heart icon click handler
+    const footerContent = document.querySelector('.footer-content');
+    if (footerContent) {
+        footerContent.addEventListener('click', (e) => {
+            if (e.target.textContent.includes('❤️')) {
+                showModal('visitor-stats');
+            }
+        });
+    }
 
     // === Calendar Modal Functions ===
     function setupCalendarModal() {
