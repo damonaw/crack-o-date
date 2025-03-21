@@ -5,9 +5,21 @@
     /* Colors */
     --primary-color: #3498db;
     --primary-color-rgb: 52, 152, 219;
+    --primary-color-dark: #2980b9;
+    --primary-color-darker: #2472a4;
+    --primary-color-darkest: #1f618d;
+    
     --secondary-color: #2ecc71;
+    --secondary-color-dark: #27ae60;
+    
     --text-color: #333;
+    --text-color-muted: #666;
     --background-color: #fff;
+    --background-color-alt: #f8f9fa;
+    --background-color-hover: #e9ecef;
+    
+    /* Gray Scale */
+    --gray-50: #f8f9fa;
     --gray-100: #f8f9fa;
     --gray-200: #e9ecef;
     --gray-300: #dee2e6;
@@ -16,12 +28,24 @@
     --gray-600: #7f8c8d;
     --gray-700: #2c3e50;
     
+    /* Status Colors */
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --error-color: #e74c3c;
+    --error-color-dark: #c0392b;
+    
     /* Operator Colors */
     --basic-1-color: #3498db;
     --basic-2-color: #2ecc71;
     --advanced-color: #e67e22;
     --function-color: #9b59b6;
     --grouping-color: #95a5a6;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    --gradient-primary-hover: linear-gradient(135deg, var(--primary-color-dark), var(--primary-color-darker));
+    --gradient-primary-active: linear-gradient(135deg, var(--primary-color-darker), var(--primary-color-darkest));
+    --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--secondary-color-dark));
     
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -43,6 +67,167 @@
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-full: 50%;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Z-index Layers */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1000;
+    --z-index-fixed: 2000;
+    --z-index-modal-backdrop: 2000;
+    --z-index-modal: 2001;
+    --z-index-popover: 3000;
+    --z-index-tooltip: 3000;
+    
+    /* Breakpoints */
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 1.75rem;
+    --font-size-3xl: 2rem;
+}
+
+/* ==========================================================================
+   Base Calendar Component
+   ========================================================================== */
+.calendar {
+    /* Base Calendar Styles */
+    --calendar-header-bg: var(--gray-50);
+    --calendar-header-border: var(--gray-200);
+    --calendar-day-bg: var(--background-color);
+    --calendar-day-hover-bg: var(--gray-50);
+    --calendar-day-text: var(--gray-700);
+    --calendar-day-selected-bg: rgba(var(--primary-color-rgb), 0.1);
+    --calendar-day-selected-text: var(--primary-color);
+    --calendar-day-today-bg: rgba(var(--primary-color-rgb), 0.05);
+    --calendar-day-today-text: var(--primary-color);
+    --calendar-day-solutions-bg: rgba(46, 204, 113, 0.1);
+    --calendar-day-solutions-text: var(--secondary-color);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--calendar-header-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--calendar-header-border);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--calendar-header-bg);
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--calendar-header-border);
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    font-weight: 600;
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-xs) 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--gray-200);
+    padding: 1px;
+}
+
+.calendar-day {
+    aspect-ratio: 1.2;
+    background: var(--calendar-day-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: var(--spacing-sm);
+    min-height: 40px;
+    gap: var(--spacing-xs);
+}
+
+.calendar-day:not(.empty):hover {
+    background: var(--calendar-day-hover-bg);
+    transform: scale(1.05);
+}
+
+.calendar-day.empty {
+    background: var(--calendar-day-hover-bg);
+    cursor: default;
+}
+
+.calendar-day.selected {
+    background: var(--calendar-day-selected-bg);
+}
+
+.calendar-day.selected .day-number {
+    color: var(--calendar-day-selected-text);
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    background: var(--calendar-day-today-bg);
+}
+
+.calendar-day.today .day-number {
+    color: var(--calendar-day-today-text);
+    font-weight: 600;
+}
+
+.calendar-day.has-solutions {
+    background: var(--calendar-day-solutions-bg);
+}
+
+.calendar-day.has-solutions .day-number {
+    color: var(--calendar-day-solutions-text);
+}
+
+.calendar-day.has-solutions i {
+    position: static;
+    color: var(--calendar-day-solutions-text);
+    font-size: var(--font-size-sm);
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   Calendar Modal Variant
+   ========================================================================== */
+#calendar-modal .calendar {
+    --calendar-header-bg: var(--gray-50);
+    --calendar-header-border: var(--gray-200);
+    --calendar-day-bg: var(--background-color);
+    --calendar-day-hover-bg: var(--gray-50);
+    --calendar-day-text: var(--gray-700);
+    --calendar-day-selected-bg: rgba(var(--primary-color-rgb), 0.1);
+    --calendar-day-selected-text: var(--primary-color);
+    --calendar-day-today-bg: rgba(var(--primary-color-rgb), 0.05);
+    --calendar-day-today-text: var(--primary-color);
+    --calendar-day-solutions-bg: rgba(46, 204, 113, 0.1);
+    --calendar-day-solutions-text: var(--secondary-color);
+}
+
+#calendar-modal .modal-content {
+    max-width: 400px;
 }
 
 /* ==========================================================================
@@ -1291,6 +1476,13 @@ body {
     font-weight: 600;
 }
 
+.calendar-day.today i {
+    position: static;
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
 .calendar-legend {
     display: flex;
     justify-content: center;
@@ -1351,6 +1543,20 @@ body {
 }
 
 /* Calendar Modal Specific Styles */
+#calendar-modal .calendar {
+    --calendar-header-bg: var(--gray-50);
+    --calendar-header-border: var(--gray-200);
+    --calendar-day-bg: var(--background-color);
+    --calendar-day-hover-bg: var(--gray-50);
+    --calendar-day-text: var(--gray-700);
+    --calendar-day-selected-bg: rgba(var(--primary-color-rgb), 0.1);
+    --calendar-day-selected-text: var(--primary-color);
+    --calendar-day-today-bg: rgba(var(--primary-color-rgb), 0.05);
+    --calendar-day-today-text: var(--primary-color);
+    --calendar-day-solutions-bg: rgba(46, 204, 113, 0.1);
+    --calendar-day-solutions-text: var(--secondary-color);
+}
+
 #calendar-modal .modal-content {
     max-width: 400px;
 }
@@ -1361,9 +1567,9 @@ body {
     align-items: center;
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
-    background: var(--gray-50);
+    background: var(--calendar-header-bg);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--gray-200);
+    border: 1px solid var(--calendar-header-border);
 }
 
 #calendar-modal .calendar-header h3 {
@@ -1376,9 +1582,9 @@ body {
 #calendar-modal .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: var(--gray-50);
+    background: var(--calendar-header-bg);
     padding: var(--spacing-xs) 0;
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--calendar-header-border);
 }
 
 #calendar-modal .calendar-weekdays div {
@@ -1399,7 +1605,7 @@ body {
 
 #calendar-modal .calendar-day {
     aspect-ratio: 1.2;
-    background: var(--background-color);
+    background: var(--calendar-day-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1413,45 +1619,45 @@ body {
 }
 
 #calendar-modal .calendar-day:not(.empty):hover {
-    background: var(--gray-50);
+    background: var(--calendar-day-hover-bg);
     transform: scale(1.05);
 }
 
 #calendar-modal .calendar-day.empty {
-    background: var(--gray-50);
+    background: var(--calendar-day-hover-bg);
     cursor: default;
 }
 
 #calendar-modal .calendar-day.selected {
-    background: rgba(var(--primary-color-rgb), 0.1);
+    background: var(--calendar-day-selected-bg);
 }
 
 #calendar-modal .calendar-day.selected .day-number {
-    color: var(--primary-color);
+    color: var(--calendar-day-selected-text);
     font-weight: 600;
 }
 
 #calendar-modal .calendar-day.today {
-    background: rgba(var(--primary-color-rgb), 0.05);
+    background: var(--calendar-day-today-bg);
 }
 
 #calendar-modal .calendar-day.today .day-number {
-    color: var(--primary-color);
+    color: var(--calendar-day-today-text);
     font-weight: 600;
 }
 
 #calendar-modal .calendar-day.has-solutions {
-    background: rgba(46, 204, 113, 0.1);
+    background: var(--calendar-day-solutions-bg);
 }
 
 #calendar-modal .calendar-day.has-solutions .day-number {
-    color: var(--secondary-color);
+    color: var(--calendar-day-solutions-text);
 }
 
 #calendar-modal .calendar-day.has-solutions i {
     position: static;
-    color: var(--secondary-color);
-    font-size: 0.8rem;
+    color: var(--calendar-day-solutions-text);
+    font-size: var(--font-size-sm);
     margin-top: 2px;
 }
 
