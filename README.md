@@ -80,3 +80,49 @@ Valid equations might look like:
 - `5! = 120`
 - `abs(-25) = 5^2`
 - `log(100) = 2^(3&1)`
+
+## Deployment Instructions
+
+### Frontend (GitHub Pages)
+
+1. The frontend is automatically deployed to GitHub Pages when changes are pushed to the `main` or `gh-pages` branch.
+2. To manually trigger a deployment:
+   - Go to the Actions tab in your GitHub repository
+   - Select the "Deploy to GitHub Pages" workflow
+   - Click "Run workflow"
+
+### Backend
+
+1. Deploy the backend to a hosting service (e.g., Heroku, Railway, or Render):
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+2. Set the following environment variables:
+   - `PORT`: The port to run the server on (default: 5001)
+
+3. Update the frontend configuration:
+   - Edit `frontend/config.js`
+   - Replace `'https://your-backend-url.com'` with your actual backend URL
+
+## Local Development
+
+1. Start the backend server:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+2. Serve the frontend:
+   ```bash
+   cd frontend
+   python -m http.server 8000
+   ```
+
+3. Open your browser and navigate to `http://localhost:8000`
+
+## License
+
+MIT License

@@ -1,9 +1,11 @@
 from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
 from datetime import datetime
 import json
 import os
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # File to store visitor data
 VISITOR_FILE = 'visitor_data.json'
@@ -77,4 +79,4 @@ def get_stats():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001) 
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5001))) 
