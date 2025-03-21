@@ -3,50 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A mathematical puzzle game using today's date">
     <title>crack-o-date</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar">
-        <h1 class="navbar-brand"><i class="fas fa-calculator"></i> Crack-O-Date</h1>
-        <ul class="navbar-nav">
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-info-circle"></i> Rules</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-trophy"></i> Solutions</a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-keyboard"></i> Shortcuts</a></li>
-        </ul>
-    </nav>
+    <header class="site-header">
+        <div class="header-content">
+            <h1 class="site-title">crack-o-date</h1>
+            <div class="header-date" id="header-date" role="button" tabindex="0"></div>
+            <button class="menu-button" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
 
     <main class="container">
         <div class="game-container">
-            <p class="date-display"><i class="far fa-calendar-alt"></i> Today's date<br /><span id="current-date"></span></p>
+            <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
 
-            <div id="error-message" class="error-message"></div>
+            <section id="date-buttons" class="button-container" aria-label="Date numbers"></section>
+            <section id="operator-buttons" class="button-container" aria-label="Mathematical operators"></section>
 
-            <div class="date-numbers">
-                <div id="date-buttons" class="button-container"></div>
-            </div>
+            <section class="equation-builder" aria-label="Equation builder">
+                <div class="equation-side" id="left-side" role="button" tabindex="0"></div>
+                <div id="equals-sign" aria-label="equals sign">=</div>
+                <div class="equation-side" id="right-side" role="button" tabindex="0"></div>
+            </section>
 
-            <div class="operators">
-                <div id="operator-buttons" class="button-container">
-                    <button class="btn operator">+</button>
-                    <button class="btn operator">-</button>
-                    <button class="btn operator">*</button>
-                    <button class="btn operator">/</button>
-                    <button class="btn operator">%</button>
-                    <button class="btn operator">(</button>
-                    <button class="btn operator">)</button>
-                    <button class="btn operator">^</button>
-                </div>
-            </div>
-
-            <div class="equation-builder">
-                <div class="equation-side" id="left-side"></div>
-                <div id="equals-sign">=</div>
-                <div class="equation-side" id="right-side"></div>
-            </div>
-
-            <div class="equation-values">
+            <div class="equation-values" aria-live="polite">
                 <span id="left-value">?</span> = <span id="right-value">?</span>
             </div>
 
@@ -55,29 +46,64 @@
                 <button id="check-button" class="btn action-btn primary">Check</button>
             </div>
         </div>
-
-        <div class="difficulty-container">
-            <label for="difficulty">Difficulty:</label>
-            <select id="difficulty">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-            <p id="difficulty-info" class="info-text">Medium: Must use all date digits in order</p>
-        </div>
     </main>
 
-    <div id="modal" class="modal">
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>Made with ❤️ by Damon</p>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span id="current-year"></span> crack-o-date. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modal-title">Modal Title</h2>
-            <div id="modal-body">Modal content goes here</div>
+            <button class="modal-close" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; <span id="current-year"></span> crack-o-date | <i class="fas fa-calculator"></i> Math puzzle game</p>
-    </footer>
+    <!-- Calendar Modal -->
+    <div class="modal" id="calendar-modal">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close calendar">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2>Select Date</h2>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prev-month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="calendar-month"></h3>
+                    <button class="calendar-nav" id="next-month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-days" id="calendar-days"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

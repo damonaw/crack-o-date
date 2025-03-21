@@ -1,841 +1,1793 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Game variables
-    let currentDifficulty = 'medium';
-    let isLeftSide = true;
-    let currentNumberIndex = 0;
-    let totalPoints = 0;
-    let solutionsCount = 0;
-    let highestPoints = 0;
+// Game data management
+const gameData = {
+    stats: {
+        totalSolutions: 0,
+        totalPoints: 0,
+        highScore: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averagePoints: 0,
+        lastPlayedDate: null
+    },
+    solutions: [],
     
-    // Game settings
-    const difficultySettings = {
-        easy: {
-            requireAllNumbers: false,
-            pointMultiplier: 0,
-            fixedPoints: 1, // Easy mode now always gives exactly 1 point
-            description: 'Easy: Can use any date numbers in any order, 1 point per solution.'
-        },
-        medium: {
-            requireAllNumbers: true,
-            pointMultiplier: 1,
-            description: 'Medium: Must use all date digits in order, points based on operators used.'
-        },
-        hard: {
-            requireAllNumbers: true,
-            pointMultiplier: 2,
-            description: 'Hard: Must use all date digits in order and use +, -, *, and / operators, double points!'
+    load() {
+        const savedStats = JSON.parse(localStorage.getItem('stats') || '{}');
+        const savedSolutions = JSON.parse(localStorage.getItem('solutions') || '[]');
+        
+        this.stats = { ...this.stats, ...savedStats };
+        this.solutions = savedSolutions;
+        
+        this.updateDisplay();
+    },
+    
+    save() {
+        localStorage.setItem('stats', JSON.stringify(this.stats));
+        localStorage.setItem('solutions', JSON.stringify(this.solutions));
+    },
+    
+    updateDisplay() {
+        // Save the current state to localStorage
+        this.save();
+    },
+    
+    addSolution(leftExpression, rightExpression, points, date) {
+        const solution = {
+            date: date.toISOString(),
+            left: leftExpression,
+            right: rightExpression,
+            points: points,
+            dateNumbers: window.dateNumbers.join(''),
+            hardMode: gameState.hardMode  // Add hard mode information
+        };
+        
+        this.solutions.push(solution);
+        this.updateStats(points, date.toISOString().split('T')[0]);
+        this.save();
+    },
+    
+    updateStats(points, today) {
+        // Update high score if current points are higher
+        if (points > this.stats.highScore) {
+            this.stats.highScore = points;
         }
-    };
+        
+        // Update streak based on last played date
+        if (this.stats.lastPlayedDate) {
+            const lastPlayed = new Date(this.stats.lastPlayedDate);
+            const todayDate = new Date(today);
+            const diffTime = Math.abs(todayDate - lastPlayed);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+                // Consecutive day
+                this.stats.currentStreak++;
+                if (this.stats.currentStreak > this.stats.bestStreak) {
+                    this.stats.bestStreak = this.stats.currentStreak;
+                }
+            } else if (diffDays > 1) {
+                // Streak broken
+                this.stats.currentStreak = 1;
+            }
+        } else {
+            // First time playing
+            this.stats.currentStreak = 1;
+            this.stats.bestStreak = 1;
+        }
+        
+        this.stats.lastPlayedDate = today;
+        this.stats.totalPoints += points;
+        this.stats.averagePoints = this.stats.totalPoints / this.solutions.length;
+    },
     
-    // Local storage keys prefix
-    const storagePrefix = 'crack-o-date-';
+    resetStreak() {
+        this.stats.currentStreak = 0;
+        this.stats.lastPlayedDate = null;
+        this.save();
+    },
     
-    // Display the current date
-    const today = new Date();
-    const day = today.getDate();
-    const month = today.getMonth() + 1; // Months are zero-based
-    const year = today.getFullYear();
-    const dateString = `${month}/${day}/${year}`;
+    getTodaysSolutions() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.solutions.filter(solution => 
+            solution.date.startsWith(today)
+        );
+    }
+};
+
+// Menu and Modal Management
+const modalContent = {
+    'how-to-play': {
+        title: 'How to Play',
+        content: `
+            <h3>Objective</h3>
+            <p>Create mathematical expressions that equal each other using today's date numbers.</p>
+            
+            <h3>Rules</h3>
+            <ul>
+                <li>Use all numbers from today's date in order</li>
+                <li>Create expressions on both sides of the equation</li>
+                <li>Expressions must equal each other</li>
+                <li>More complex operations earn more points</li>
+            </ul>
+            
+            <h3>Scoring</h3>
+            <ul>
+                <li>Basic operations (+, -): 1 point</li>
+                <li>Advanced operations (×, ÷, mod): 2 points</li>
+                <li>Complex operations (^, √, |, &): 3 points</li>
+                <li>Functions (abs, log, !): 4 points</li>
+            </ul>
+        `
+    },
+    'your-solutions': {
+        title: 'Your Solutions',
+        content: () => {
+            const todaysSolutions = gameData.getTodaysSolutions();
+            return `
+                <div class="solutions-list">
+                    ${todaysSolutions.length > 0 ? 
+                        todaysSolutions.map((solution, index) => `
+                            <div class="solution-item" data-solution-index="${index}">
+                                <div class="solution-header">
+                                    <div class="solution-points">
+                                        <i class="fas fa-star"></i>
+                                        ${solution.points} points
+                                        ${solution.hardMode ? '<span class="hard-mode-badge"><i class="fas fa-skull"></i> Hard Mode</span>' : ''}
+                                    </div>
+                                    <button class="solution-share" aria-label="Share solution">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                </div>
+                                <div class="solution-equation">
+                                    ${formatExpression(solution.left)} = ${formatExpression(solution.right)}
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<p>No solutions yet. Start playing to see your solutions here!</p>'
+                    }
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn primary" id="share-all-btn">
+                        <i class="fas fa-share-alt"></i>
+                        Share All Solutions
+                    </button>
+                    <button class="modal-btn danger" id="clear-solutions-btn">
+                        <i class="fas fa-trash"></i>
+                        Clear All Solutions
+                    </button>
+                </div>
+            `;
+        }
+    },
+    'history': {
+        title: 'Solution History',
+        content: () => {
+            // Get current date and first day of current month
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            
+            // Get days in month and first day of week
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Get all dates with solutions or attempts
+            const datesWithData = new Set(
+                gameData.solutions.map(solution => solution.date.split('T')[0])
+            );
+            
+            // Generate calendar HTML
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            let calendarHTML = `
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prev-month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3>${monthNames[currentMonth]} ${currentYear}</h3>
+                    <button class="calendar-nav" id="next-month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-days">
+            `;
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                calendarHTML += '<div class="calendar-day empty"></div>';
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentYear, currentMonth, day);
+                const dateStr = date.toISOString().split('T')[0];
+                const hasSolutions = datesWithData.has(dateStr);
+                const isToday = day === today.getDate() && 
+                              currentMonth === today.getMonth() && 
+                              currentYear === today.getFullYear();
+                
+                calendarHTML += `
+                    <div class="calendar-day ${hasSolutions ? 'has-solutions' : ''} ${isToday ? 'today' : ''}"
+                         data-date="${dateStr}">
+                        <span class="day-number">${day}</span>
+                        ${hasSolutions ? '<i class="fas fa-check-circle"></i>' : ''}
+                    </div>
+                `;
+            }
+            
+            calendarHTML += `
+                    </div>
+                </div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color has-solutions"></div>
+                        <span>Has Solutions</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color today"></div>
+                        <span>Today</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn danger" id="reset-all-data">
+                        <i class="fas fa-trash"></i>
+                        Reset All Data
+                    </button>
+                </div>
+            `;
+            
+            return calendarHTML;
+        }
+    },
+    'keyboard-shortcuts': {
+        title: 'Keyboard Shortcuts',
+        content: `
+            <h3>Navigation</h3>
+            <ul>
+                <li><kbd>Tab</kbd> Switch between left and right sides</li>
+                <li><kbd>Enter</kbd> Check solution</li>
+                <li><kbd>Escape</kbd> Clear equation</li>
+            </ul>
+            
+            <h3>Numbers</h3>
+            <p>Use number keys (0-9) to input date numbers in order</p>
+            
+            <h3>Operators</h3>
+            <ul>
+                <li><kbd>+</kbd> Addition</li>
+                <li><kbd>-</kbd> Subtraction</li>
+                <li><kbd>*</kbd> Multiplication</li>
+                <li><kbd>/</kbd> Division</li>
+                <li><kbd>%</kbd> Modulo</li>
+                <li><kbd>^</kbd> Exponent</li>
+                <li><kbd>(</kbd> Opening parenthesis</li>
+                <li><kbd>)</kbd> Closing parenthesis</li>
+            </ul>
+        `
+    },
+    'stats': {
+        title: 'Statistics',
+        content: () => {
+            const stats = gameData.stats;
+            return `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.totalSolutions}</span>
+                        <span class="stat-label">Total Solutions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.totalPoints}</span>
+                        <span class="stat-label">Total Points</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.highScore}</span>
+                        <span class="stat-label">High Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.currentStreak}</span>
+                        <span class="stat-label">Current Streak</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.bestStreak}</span>
+                        <span class="stat-label">Best Streak</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${stats.averagePoints.toFixed(1)}</span>
+                        <span class="stat-label">Average Points</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+};
+
+// Format expression for display
+function formatExpression(expression) {
+    if (!expression) return '';
+    return expression
+        .replace(/\*/g, '×')
+        .replace(/\//g, '÷')
+        .replace(/%/g, ' mod ')
+        .replace(/\(/g, '<span class="paren">(</span>')
+        .replace(/\)/g, '<span class="paren">)</span>')
+        .replace(/\^/g, '<sup>')
+        .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>')
+        .replace(/Math\.sqrt/g, '√')
+        .replace(/Math\.abs/g, '|')
+        .replace(/Math\.log10/g, 'log')
+        .replace(/&/g, '∧')
+        .replace(/\|(?![^|]*\|)/g, '∨');
+}
+
+// Date handling functions
+function getDateNumbers(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
     
-    document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', { 
+    return [
+        ...String(month).split('').map(Number),
+        ...String(day).split('').map(Number),
+        ...String(year).split('').map(Number)
+    ];
+}
+
+function formatDate(date) {
+    return date.toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
-    
-    // Display current year in footer
-    document.getElementById('current-year').textContent = year;
-    
-    // Parse date into individual digits
-    function splitNumberIntoDigits(number) {
-        return number.toString().split('').map(Number);
-    }
-    
-    const monthDigits = splitNumberIntoDigits(month);
-    const dayDigits = splitNumberIntoDigits(day);
-    const yearDigits = splitNumberIntoDigits(year);
-    const dateNumbers = [...monthDigits, ...dayDigits, ...yearDigits];
-    
-    // Create date number buttons
-    const dateButtonsContainer = document.getElementById('date-buttons');
-    
-    // Add month digits
-    monthDigits.forEach(digit => {
-        const button = document.createElement('button');
-        button.textContent = digit;
-        button.classList.add('btn', 'number');
-        dateButtonsContainer.appendChild(button);
-    });
-    
-    // Add separator
-    const separator1 = document.createElement('span');
-    separator1.textContent = '/';
-    dateButtonsContainer.appendChild(separator1);
-    
-    // Add day digits
-    dayDigits.forEach(digit => {
-        const button = document.createElement('button');
-        button.textContent = digit;
-        button.classList.add('btn', 'number');
-        dateButtonsContainer.appendChild(button);
-    });
-    
-    // Add separator
-    const separator2 = document.createElement('span');
-    separator2.textContent = '/';
-    dateButtonsContainer.appendChild(separator2);
-    
-    // Add year digits
-    yearDigits.forEach(digit => {
-        const button = document.createElement('button');
-        button.textContent = digit;
-        button.classList.add('btn', 'number');
-        dateButtonsContainer.appendChild(button);
-    });
-    
-    // Safely evaluate expressions
-    function safeEval(expression) {
-        if (!expression) return '';
+}
 
-        try {
-            // Make sure % is interpreted as modulus and not percent
-            // Replace isolated % operators with JavaScript's modulo syntax
-            const cleanedExpression = expression
-                .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
-                .replace(/(\d+)\s*\(/g, '$1*(') // Handle implicit multiplication before parentheses
-                .replace(/\)\s*(\d+)/g, ')*$1') // Handle implicit multiplication after parentheses
-                .replace(/-\s*\(/g, '-1*('); // Handle negative sign before parentheses
-
-            // Use Function for safer evaluation than eval
-            return Function(`'use strict'; return (${cleanedExpression})`)();
-        } catch (error) {
-            console.error('Expression evaluation error:', error, expression);
-            return 'Error';
+// Game state management
+const gameState = {
+    // State variables
+    isLeftSide: true,
+    currentNumberIndex: 0,
+    currentMonth: new Date().getMonth(),
+    currentYear: new Date().getFullYear(),
+    selectedDate: new Date(),
+    hardMode: false,
+    beginnerMode: false,
+    darkMode: false,  // Add dark mode state
+    
+    // Load saved preferences
+    loadPreferences() {
+        const savedHardMode = localStorage.getItem('hardMode');
+        const savedBeginnerMode = localStorage.getItem('beginnerMode');
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedHardMode !== null) {
+            this.hardMode = savedHardMode === 'true';
         }
-    }
+        if (savedBeginnerMode !== null) {
+            this.beginnerMode = savedBeginnerMode === 'true';
+        }
+        if (savedDarkMode !== null) {
+            this.darkMode = savedDarkMode === 'true';
+            document.body.classList.toggle('dark-mode', this.darkMode);
+        }
+    },
     
-    // Format expression for display
-    function formatExpression(expression) {
-        if (!expression) return '';
-        
-        return expression
-            .replace(/\*/g, '×') // Multiplication sign
-            .replace(/\//g, '÷') // Division sign
-            .replace(/%/g, ' mod ') // Modulus operator
-            .replace(/\(/g, '<span class="paren">(</span>') // Highlight parentheses
-            .replace(/\)/g, '<span class="paren">)</span>')
-            .replace(/\^/g, '<sup>') // Start superscript for powers
-            .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>'); // Close superscript tags
-    }
+    // Save preferences
+    savePreferences() {
+        localStorage.setItem('hardMode', this.hardMode);
+        localStorage.setItem('beginnerMode', this.beginnerMode);
+        localStorage.setItem('darkMode', this.darkMode);
+    },
     
-    // Update the current value displays
-    function updateCurrentValues() {
-        // Get the left side expression
-        const leftExpression = Array.from(
-            document.querySelectorAll('#left-side button')
-        )
-            .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**'); // Replace ^ with ** for exponentiation
-        
-        // Get the right side expression
-        const rightExpression = Array.from(
-            document.querySelectorAll('#right-side button')
-        )
-            .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**');
-        
-        // Evaluate both sides and update displayed values
-        document.getElementById('left-value').textContent = safeEval(leftExpression) || '?';
-        document.getElementById('right-value').textContent = safeEval(rightExpression) || '?';
-        
-        // Update equals sign
-        updateEqualsSign();
-    }
+    // UI Helper Functions
+    createButton(text, type) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.classList.add('btn', type);
+        return button;
+    },
     
-    // Update equals sign
-    function updateEqualsSign() {
-        const leftExpression = Array.from(
-            document.querySelectorAll('#left-side button')
-        )
-            .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**');
+    addNumberButtons(numberString, container) {
+        numberString.split('').forEach(digit => {
+            container.appendChild(this.createButton(digit, 'number'));
+        });
+    },
+    
+    initializeDateButtons() {
+        const dateButtonsContainer = document.getElementById('date-buttons');
+        const [month, day, year] = [
+            this.selectedDate.getMonth() + 1, 
+            this.selectedDate.getDate(), 
+            this.selectedDate.getFullYear()
+        ];
         
-        const rightExpression = Array.from(
-            document.querySelectorAll('#right-side button')
-        )
+        // Add month digits
+        this.addNumberButtons(String(month), dateButtonsContainer);
+        dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
+        
+        // Add day digits
+        this.addNumberButtons(String(day), dateButtonsContainer);
+        dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
+        
+        // Add year digits
+        this.addNumberButtons(String(year), dateButtonsContainer);
+    },
+    
+    getActiveSide() {
+        return document.getElementById(this.isLeftSide ? 'left-side' : 'right-side');
+    },
+    
+    getExpressionFromSide(side) {
+        return Array.from(side.querySelectorAll('button'))
             .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**');
+            .join('');
+    },
+    
+    updateActiveSide() {
+        document.getElementById('left-side').classList.toggle('active', this.isLeftSide);
+        document.getElementById('right-side').classList.toggle('active', !this.isLeftSide);
+    },
+    
+    updateCurrentValues() {
+        const leftSide = document.getElementById('left-side');
+        const rightSide = document.getElementById('right-side');
+        const leftExpression = this.getExpressionFromSide(leftSide);
+        const rightExpression = this.getExpressionFromSide(rightSide);
         
         const leftValue = safeEval(leftExpression);
         const rightValue = safeEval(rightExpression);
         
-        if (
-            leftExpression === '' || 
-            rightExpression === '' || 
-            leftValue === 'Error' || 
-            rightValue === 'Error' ||
-            leftValue !== rightValue
-        ) {
-            document.getElementById('equals-sign').textContent = '≠';
-        } else {
-            document.getElementById('equals-sign').textContent = '=';
-        }
-    }
+        document.getElementById('left-value').textContent = leftValue !== '' ? leftValue : '?';
+        document.getElementById('right-value').textContent = rightValue !== '' ? rightValue : '?';
+        this.updateEqualsSign(leftExpression, rightExpression);
+    },
     
-    // Show error message
-    function showError(message) {
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
+    updateEqualsSign(leftExpression, rightExpression) {
+        const leftValue = safeEval(leftExpression);
+        const rightValue = safeEval(rightExpression);
+        const equalsSign = document.getElementById('equals-sign');
         
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    }
+        const isValid = leftExpression && rightExpression && 
+                       leftValue !== 'Error' && rightValue !== 'Error';
+        equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
+    },
     
-    // Hide error message
-    function hideError() {
-        document.getElementById('error-message').style.display = 'none';
-    }
-    
-    // Show modal
-    function showModal(title, body) {
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-        
-        modalTitle.textContent = title;
-        modalBody.innerHTML = body;
-        
-        modal.classList.add('show');
-        
-        return new Promise((resolve) => {
-            const closeModal = () => {
-                modal.classList.remove('show');
-                resolve();
-            };
-            
-            // Close button
-            document.querySelector('#modal .close').onclick = closeModal;
-                        
-            // Click outside to close
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
-            
-            // ESC key to close
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            }, { once: true });
-        });
-    }
-    
-    // Update which side is active
-    function updateActiveSide() {
-        const leftSide = document.getElementById('left-side');
-        const rightSide = document.getElementById('right-side');
-        
-        if (isLeftSide) {
-            leftSide.classList.add('active');
-            rightSide.classList.remove('active');
-        } else {
-            leftSide.classList.remove('active');
-            rightSide.classList.add('active');
-        }
-    }
-    
-    // Calculate points for an expression
-    function calculatePoints(expression) {
-        let points = 0;
-        
-        for (const char of expression) {
-            if (char === '+' || char === '-') points += 1;
-            else if (char === '*' || char === '/' || char === '%') points += 2;
-            else if (char === '^') points += 3;
-        }
-        
-        return points;
-    }
-    
-    // Save the user's solutions locally
-    function saveSolution(leftExpr, rightExpr, points) {
-        const storageKey = `${storagePrefix}solutions-${dateString}`;
-        try {
-            // Get existing solutions
-            let solutions = getSavedSolutions();
-
-            // Create a unique solution ID
-            const solutionId = `${leftExpr}=${rightExpr}`;
-
-            // Check if solution already exists
-            if (!solutions.some(sol => sol.id === solutionId)) {
-                solutions.push({
-                    id: solutionId,
-                    left: leftExpr,
-                    right: rightExpr,
-                    points: points,
-                    timestamp: Date.now(),
-                    difficulty: currentDifficulty
-                });
-
-                // Save back to local storage
-                localStorage.setItem(storageKey, JSON.stringify(solutions));
-
-                // Update stats
-                updateTotalPoints(points);
-                updateSolutionsCount(1);
-
-                // Update highest points if needed
-                if (points > highestPoints) {
-                    updateHighestPoints(points);
-                }
-
-                return true; // New solution saved
-            }
-
-            return false; // Solution already exists
-        } catch (error) {
-            console.warn('Failed to save solution to local storage:', error);
-            return false;
-        }
-    }
-
-    // Get saved solutions from local storage
-    function getSavedSolutions() {
-        const storageKey = `${storagePrefix}solutions-${dateString}`;
-        try {
-            const savedSolutions = localStorage.getItem(storageKey);
-            return savedSolutions ? JSON.parse(savedSolutions) : [];
-        } catch (error) {
-            console.warn('Failed to get solutions from local storage:', error);
-            return [];
-        }
-    }
-    
-    // Local storage functions
-    function getSavedSolutions() {
-        const storageKey = `${storagePrefix}solutions-${dateString}`;
-        try {
-            const savedSolutions = localStorage.getItem(storageKey);
-            return savedSolutions ? JSON.parse(savedSolutions) : [];
-        } catch (error) {
-            console.warn('Failed to get solutions from local storage:', error);
-            return [];
-        }
-    }
-    
-    function saveSolution(leftExpr, rightExpr, points) {
-        const storageKey = `${storagePrefix}solutions-${dateString}`;
-        try {
-            // Get existing solutions
-            let solutions = getSavedSolutions();
-            
-            // Create a unique solution ID
-            const solutionId = `${leftExpr}=${rightExpr}`;
-            
-            // Check if solution already exists
-            if (!solutions.some(sol => sol.id === solutionId)) {
-                solutions.push({
-                    id: solutionId,
-                    left: leftExpr,
-                    right: rightExpr,
-                    points: points,
-                    timestamp: Date.now(),
-                    difficulty: currentDifficulty
-                });
-                
-                // Save back to local storage
-                localStorage.setItem(storageKey, JSON.stringify(solutions));
-                
-                // Update stats
-                updateTotalPoints(points);
-                updateSolutionsCount(1);
-                
-                // Update highest points if needed
-                if (points > highestPoints) {
-                    updateHighestPoints(points);
-                }
-                
-                return true; // New solution saved
-            }
-            
-            return false; // Solution already exists
-        } catch (error) {
-            console.warn('Failed to save solution to local storage:', error);
-            return false;
-        }
-    }
-    
-    function updateTotalPoints(newPoints) {
-        const storageKey = `${storagePrefix}total-points-${dateString}`;
-        totalPoints += newPoints;
-        localStorage.setItem(storageKey, totalPoints.toString());
-    }
-    
-    function updateSolutionsCount(increment) {
-        const storageKey = `${storagePrefix}solutions-count-${dateString}`;
-        solutionsCount += increment;
-        localStorage.setItem(storageKey, solutionsCount.toString());
-    }
-    
-    function updateHighestPoints(points) {
-        const storageKey = `${storagePrefix}highest-points-${dateString}`;
-        highestPoints = points;
-        localStorage.setItem(storageKey, highestPoints.toString());
-    }
-    
-    // Load stats from local storage
-    function loadStats() {
-        try {
-            // Load total points
-            const pointsKey = `${storagePrefix}total-points-${dateString}`;
-            const savedPoints = localStorage.getItem(pointsKey);
-            totalPoints = savedPoints ? parseInt(savedPoints) : 0;
-            
-            // Load solutions count
-            const countKey = `${storagePrefix}solutions-count-${dateString}`;
-            const savedCount = localStorage.getItem(countKey);
-            solutionsCount = savedCount ? parseInt(savedCount) : 0;
-            
-            // Load highest points
-            const highestKey = `${storagePrefix}highest-points-${dateString}`;
-            const savedHighest = localStorage.getItem(highestKey);
-            highestPoints = savedHighest ? parseInt(savedHighest) : 0;
-        } catch (error) {
-            console.warn('Failed to load stats:', error);
-        }
-    }
-    
-    // Add event listeners for equation sides
-    const leftSide = document.getElementById('left-side');
-    const rightSide = document.getElementById('right-side');
-    
-    leftSide.addEventListener('click', function() {
-        isLeftSide = true;
-        updateActiveSide();
-    });
-    
-    rightSide.addEventListener('click', function() {
-        isLeftSide = false;
-        updateActiveSide();
-    });
-    
-    // Add event listeners to number buttons
-    const numberButtons = document.querySelectorAll('#date-buttons .number');
-    numberButtons.forEach((button, index) => {
-        button.addEventListener('click', function() {
-            // Easy mode lets you use any number in any order
-            // Medium/Hard modes require using numbers in order
-            if (currentDifficulty === 'easy' || parseInt(button.textContent) === dateNumbers[currentNumberIndex]) {
-                hideError();
-                
-                const newButton = document.createElement('button');
-                newButton.textContent = button.textContent;
-                newButton.classList.add('btn', 'number');
-                
-                // Add click handler to allow removal if it's the last button
-                newButton.addEventListener('click', function() {
-                    const currentSide = isLeftSide ? leftSide : rightSide;
-                    
-                    if (currentSide.lastElementChild === this) {
-                        newButton.remove();
-                        button.disabled = false;
-                        button.classList.remove('disabled');
-                        
-                        if (currentDifficulty !== 'easy') {
-                            currentNumberIndex--;
-                        }
-                        
-                        updateCurrentValues();
-                    }
-                });
-                
-                // Add to the active side
-                if (isLeftSide) {
-                    leftSide.appendChild(newButton);
-                } else {
-                    rightSide.appendChild(newButton);
-                }
-                
-                // Disable the original button
-                button.disabled = true;
-                button.classList.add('disabled');
-                
-                // Update the number index for ordered selection
-                if (currentDifficulty !== 'easy') {
-                    currentNumberIndex++;
-                }
-                
-                updateCurrentValues();
-            } else {
-                showError('Please use numbers in the order they appear in the date.');
-            }
-        });
-    });
-    
-    // Add event listeners to operator buttons
-    const operatorButtons = document.querySelectorAll('#operator-buttons .operator');
-    operatorButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const newButton = document.createElement('button');
-            newButton.textContent = button.textContent;
-            newButton.classList.add('btn', 'operator');
-            
-            // Add click handler to allow removal if it's the last button
-            newButton.addEventListener('click', function() {
-                const currentSide = isLeftSide ? leftSide : rightSide;
-                
-                if (currentSide.lastElementChild === this) {
-                    this.remove();
-                    updateCurrentValues();
-                }
-            });
-            
-            // Add to the active side
-            if (isLeftSide) {
-                leftSide.appendChild(newButton);
-            } else {
-                rightSide.appendChild(newButton);
-            }
-            
-            updateCurrentValues();
-        });
-    });
-    
-    // Clear button functionality
-    const clearButton = document.getElementById('clear-button');
-    clearButton.addEventListener('click', function() {
-        // Clear both sides
-        leftSide.innerHTML = '';
-        rightSide.innerHTML = '';
-        
-        // Reset number selection
-        currentNumberIndex = 0;
-        
-        // Re-enable all number buttons
-        numberButtons.forEach(button => {
+    handleClear() {
+        document.querySelectorAll('.equation-side').forEach(side => side.innerHTML = '');
+        document.querySelectorAll('#date-buttons .number').forEach(button => {
             button.disabled = false;
             button.classList.remove('disabled');
         });
+        this.currentNumberIndex = 0;
+        this.isLeftSide = true;
+        this.updateGameState();
+    },
+    
+    updateGameState() {
+        this.updateActiveSide();
+        this.updateCurrentValues();
+        hideMessage();
         
-        // Reset to left side
-        isLeftSide = true;
-        updateActiveSide();
-        updateCurrentValues();
-        hideError();
+        // Update results display based on hard mode
+        const resultsRow = document.querySelector('.equation-values');
+        if (resultsRow) {
+            resultsRow.style.display = this.hardMode ? 'none' : 'flex';
+        }
+    },
+    
+    addButtonToEquation(sourceButton) {
+        const buttonType = sourceButton.classList.contains('number') ? 'number' : 'operator';
+        const buttonText = sourceButton.textContent;
+        
+        // Check if it's a function operator (except factorial which goes after the number)
+        const isFunction = ['abs', 'log', '√'].includes(buttonText);
+        
+        // Create the main button
+        const newButton = this.createButton(buttonText, buttonType);
+        
+        // If it's a function, also create and add the opening parenthesis
+        if (isFunction) {
+            const parenButton = this.createButton('(', 'operator');
+            parenButton.setAttribute('data-type', 'grouping');
+            
+            // Add click handler for both buttons
+            newButton.addEventListener('click', () => this.handleButtonRemoval(newButton, sourceButton, [parenButton]));
+            parenButton.addEventListener('click', () => this.handleButtonRemoval(parenButton, null, [newButton]));
+            
+            // Add both buttons to the equation
+            this.getActiveSide().appendChild(newButton);
+            this.getActiveSide().appendChild(parenButton);
+        } else {
+            // Regular click handler for non-function buttons
+            newButton.addEventListener('click', () => this.handleButtonRemoval(newButton, sourceButton));
+            this.getActiveSide().appendChild(newButton);
+        }
+        
+        this.updateCurrentValues();
+    },
+    
+    handleButtonRemoval(buttonToRemove, sourceButton, relatedButtons = []) {
+        const currentSide = this.getActiveSide();
+        if (currentSide.lastElementChild === buttonToRemove || 
+            relatedButtons.includes(currentSide.lastElementChild)) {
+            
+            // Remove all related buttons in reverse order
+            if (relatedButtons.length > 0) {
+                const allButtons = [buttonToRemove, ...relatedButtons];
+                for (let i = allButtons.length - 1; i >= 0; i--) {
+                    if (allButtons[i].parentNode === currentSide) {
+                        allButtons[i].remove();
+                    }
+                }
+            } else {
+                buttonToRemove.remove();
+            }
+            
+            // Re-enable source button if it's a number
+            if (sourceButton && sourceButton.classList.contains('number')) {
+                sourceButton.disabled = false;
+                sourceButton.classList.remove('disabled');
+                this.currentNumberIndex--;
+            }
+            
+            this.updateCurrentValues();
+        }
+    }
+};
+
+// Expression Handling Functions (these can stay global as they're pure functions)
+function safeEval(expression) {
+    if (!expression) return '';
+    try {
+        // Check for incomplete expressions
+        if (/[+\-*/%^]$/.test(expression) ||    // Ends with operator
+            /\([^)]*$/.test(expression) ||      // Unclosed parenthesis
+            /[+\-*/%^]\($/.test(expression) ||  // Operator followed by opening parenthesis
+            /√$/.test(expression) ||            // Ends with square root symbol
+            /√(?!\d|\()/.test(expression) ||    // Square root not followed by number or parenthesis
+            /[|&]$/.test(expression) ||         // Ends with bitwise operator
+            /[|&](?!\d|\()/.test(expression)) { // Bitwise operator not followed by number or parenthesis
+            return '';
+        }
+        const cleaned = cleanExpression(expression);
+        
+        // Include factorial function in evaluation scope
+        const result = Function(`
+            'use strict';
+            function factorial(n) {
+                if (n < 0) return NaN;
+                if (n === 0) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) result *= i;
+                return result;
+            }
+            return (${cleaned});
+        `)();
+        
+        return result;
+    } catch (error) {
+        return '';
+    }
+}
+
+function cleanExpression(expression) {
+    let result = expression
+        // Convert square root symbol to Math.sqrt with proper parentheses
+        .replace(/√(\d+)/g, 'Math.sqrt($1)')
+        .replace(/√\(/g, 'Math.sqrt(')
+        .replace(/Math\.sqrt(?!\()/g, 'Math.sqrt(')
+        
+        // Handle basic arithmetic with parentheses
+        .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
+        // Handle implicit multiplication between numbers and parentheses
+        .replace(/(\d+)\s*\(/g, '$1*(')
+        .replace(/\)\s*(\d+)/g, ')*$1')
+        .replace(/-\s*\(/g, '-1*(')
+        
+        // Handle multiplication between numbers and functions
+        .replace(/(\d+)(log|abs|sqrt)/g, '$1*$2')
+        
+        // Handle functions with their arguments in parentheses
+        .replace(/log\(([^)]+)\)/g, 'Math.log10($1)')
+        .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')
+        
+        // Handle factorial after a number or parenthesized expression
+        .replace(/(\d+)!/g, 'factorial($1)')
+        .replace(/\(([^)]+)\)!/g, 'factorial($1)')
+        
+        // Handle functions followed by numbers or opening parenthesis
+        .replace(/(\d+)!(\d+|\()/g, 'factorial($1)*$2')
+        
+        // Handle operators inside parentheses
+        .replace(/\(([^)]*)(\d+)\s*%\s*(\d+)([^)]*)\)/g, '($1($2%$3)$4)')
+        .replace(/\(([^)]*)(\d+)\s*\^\s*(\d+)([^)]*)\)/g, '($1Math.pow($2,$3)$4)')
+        .replace(/\(([^)]*)(\d+)\s*&\s*(\d+)([^)]*)\)/g, '($1($2&$3)$4)')
+        .replace(/\(([^)]*)(\d+)\s*\|\s*(\d+)([^)]*)\)/g, '($1($2|$3)$4)')
+        
+        // Handle standalone operators
+        .replace(/(\d+)\s*&\s*(\d+)/g, '($1&$2)')
+        .replace(/(\d+)\s*\|\s*(\d+)/g, '($1|$2)')
+        .replace(/(\d+)\^(\d+)/g, 'Math.pow($1, $2)')
+        
+        // Handle empty parentheses
+        .replace(/\(\)/g, '0')
+        
+        // Ensure all Math.sqrt calls have proper closing parentheses
+        .replace(/Math\.sqrt\(([^)]+)\)/g, 'Math.sqrt($1)');
+        
+    return result;
+}
+
+// UI Helper Functions
+function getActiveSide() {
+    return document.getElementById(gameState.isLeftSide ? 'left-side' : 'right-side');
+}
+
+function getExpressionFromSide(side) {
+    return Array.from(side.querySelectorAll('button'))
+        .map(btn => btn.textContent)
+        .join('');
+}
+
+function updateActiveSide() {
+    document.getElementById('left-side').classList.toggle('active', gameState.isLeftSide);
+    document.getElementById('right-side').classList.toggle('active', !gameState.isLeftSide);
+}
+
+function updateCurrentValues() {
+    const leftSide = document.getElementById('left-side');
+    const rightSide = document.getElementById('right-side');
+    const leftExpression = getExpressionFromSide(leftSide);
+    const rightExpression = getExpressionFromSide(rightSide);
+    
+    const leftValue = safeEval(leftExpression);
+    const rightValue = safeEval(rightExpression);
+    
+    document.getElementById('left-value').textContent = leftValue !== '' ? leftValue : '?';
+    document.getElementById('right-value').textContent = rightValue !== '' ? rightValue : '?';
+    updateEqualsSign(leftExpression, rightExpression);
+}
+
+function updateEqualsSign(leftExpression, rightExpression) {
+    const leftValue = safeEval(leftExpression);
+    const rightValue = safeEval(rightExpression);
+    const equalsSign = document.getElementById('equals-sign');
+    
+    const isValid = leftExpression && rightExpression && 
+                   leftValue !== 'Error' && rightValue !== 'Error';
+    equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
+}
+
+function updateOperatorVisibility() {
+    const operators = document.querySelectorAll('#operator-buttons .operator');
+    operators.forEach(operator => {
+        const type = operator.getAttribute('data-type');
+        if (gameState.beginnerMode) {
+            // In beginner mode, only show basic operators and parentheses
+            operator.style.display = ['basic-1', 'basic-2', 'grouping'].includes(type) ? 'flex' : 'none';
+        } else {
+            // Show all operators in normal mode
+            operator.style.display = 'flex';
+        }
+    });
+}
+
+// Game Logic Functions
+function handleClear() {
+    document.querySelectorAll('.equation-side').forEach(side => side.innerHTML = '');
+    document.querySelectorAll('#date-buttons .number').forEach(button => {
+        button.disabled = false;
+        button.classList.remove('disabled');
+    });
+    gameState.currentNumberIndex = 0;
+    gameState.isLeftSide = true;
+    gameState.updateGameState();
+}
+
+function handleCheck() {
+    const leftSide = document.getElementById('left-side');
+    const rightSide = document.getElementById('right-side');
+    const leftExpression = getExpressionFromSide(leftSide);
+    const rightExpression = getExpressionFromSide(rightSide);
+    
+    if (!validateEquation(leftExpression, rightExpression)) {
+        gameData.resetStreak();
+        return;
+    }
+    
+    const leftValue = safeEval(leftExpression);
+    const rightValue = safeEval(rightExpression);
+    
+    if (leftValue === rightValue) {
+        const points = calculatePoints(leftExpression) + calculatePoints(rightExpression);
+        showMessage(
+            `Correct! ${formatExpression(leftExpression.replace(/\*\*/g, '^'))} = ${formatExpression(rightExpression.replace(/\*\*/g, '^'))} (Points: ${points})`,
+            'success'
+        );
+        gameData.addSolution(leftExpression, rightExpression, points, gameState.selectedDate);
+    } else {
+        showMessage('Incorrect. The left side does not equal the right side.');
+        gameData.resetStreak();
+    }
+}
+
+function validateEquation(leftExpression, rightExpression) {
+    if (!leftExpression || !rightExpression) {
+        showMessage('Please add numbers and operators to both sides of the equation.');
+        return false;
+    }
+    
+    const usedNumbers = Array.from(document.querySelectorAll('.equation-side button'))
+        .map(btn => btn.textContent)
+        .filter(val => /^\d+$/.test(val))
+        .join('');
+    
+    if (usedNumbers.length < window.dateNumbers.length) {
+        showMessage('You must use all numbers from the date.');
+        return false;
+    }
+    
+    return true;
+}
+
+function updateGameState() {
+    updateActiveSide();
+    updateCurrentValues();
+    hideMessage();
+}
+
+// Calendar functions
+function updateCalendar() {
+    const firstDay = new Date(gameState.currentYear, gameState.currentMonth, 1);
+    const lastDay = new Date(gameState.currentYear, gameState.currentMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const firstDayOfWeek = firstDay.getDay();
+    
+    // Update month display
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+    const calendarMonth = document.getElementById('calendar-month');
+    calendarMonth.textContent = `${monthNames[gameState.currentMonth]} ${gameState.currentYear}`;
+    
+    // Clear existing days
+    const calendarDays = document.getElementById('calendar-days');
+    calendarDays.innerHTML = '';
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        calendarDays.appendChild(createCalendarDay(''));
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(gameState.currentYear, gameState.currentMonth, day);
+        const dateStr = date.toISOString().split('T')[0];
+        const hasSolutions = gameData.solutions.some(s => s.date.startsWith(dateStr));
+        const isToday = day === new Date().getDate() && 
+                      gameState.currentMonth === new Date().getMonth() && 
+                      gameState.currentYear === new Date().getFullYear();
+        const isSelected = day === gameState.selectedDate.getDate() && 
+                         gameState.currentMonth === gameState.selectedDate.getMonth() && 
+                         gameState.currentYear === gameState.selectedDate.getFullYear();
+        
+        const dayElement = createCalendarDay(day, date, hasSolutions, isToday, isSelected);
+        calendarDays.appendChild(dayElement);
+    }
+}
+
+function createCalendarDay(day, date, hasSolutions = false, isToday = false, isSelected = false) {
+    const div = document.createElement('div');
+    div.className = 'calendar-day';
+    if (!day) div.classList.add('empty');
+    if (hasSolutions) div.classList.add('has-solutions');
+    if (isToday) div.classList.add('today');
+    if (isSelected) div.classList.add('selected');
+    
+    if (day) {
+        div.innerHTML = `
+            <span class="day-number">${day}</span>
+            ${hasSolutions ? '<i class="fas fa-check-circle"></i>' : ''}
+        `;
+        
+        div.addEventListener('click', () => {
+            gameState.selectedDate = date;
+            window.dateNumbers = getDateNumbers(gameState.selectedDate);
+            document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
+            const calendarModal = document.getElementById('calendar-modal');
+            calendarModal.classList.remove('active');
+            
+            // Clear the game board
+            handleClear();
+            
+            // Reinitialize the date buttons
+            const dateButtonsContainer = document.getElementById('date-buttons');
+            dateButtonsContainer.innerHTML = '';
+            gameState.initializeDateButtons();
+            
+            // Reset game state
+            gameState.currentNumberIndex = 0;
+            gameState.isLeftSide = true;
+            
+            // Reattach number button event listeners
+            document.querySelectorAll('#date-buttons .number').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                        hideMessage();
+                        this.disabled = true;
+                        this.classList.add('disabled');
+                        gameState.currentNumberIndex++;
+                        gameState.addButtonToEquation(this);
+                    } else {
+                        showMessage('Please use numbers in the order they appear in the date.');
+                    }
+                });
+            });
+            
+            updateGameState();
+        });
+    }
+    
+    return div;
+}
+
+// Handle menu item clicks
+function handleMenuItemClick(menuItems) {
+    return function(e) {
+        const menuItem = e.target.closest('.menu-item');
+        if (menuItem) {
+            console.log('Menu item clicked:', menuItem.dataset.modal);
+            const modalType = menuItem.dataset.modal;
+            if (modalType === 'calendar-modal') {
+                const calendarModal = document.getElementById('calendar-modal');
+                calendarModal.classList.add('active');
+                updateCalendar();
+            } else {
+                showModal(modalType);
+            }
+            menuItems.classList.remove('active');
+            e.stopPropagation(); // Prevent event from bubbling
+        }
+    };
+}
+
+function setupMenu() {
+    const menuButton = document.querySelector('.menu-button');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.querySelector('.modal-close');
+
+    // Create menu items
+    const menuItems = document.createElement('div');
+    menuItems.className = 'menu-items';
+    menuItems.innerHTML = `
+        <button class="menu-item" data-modal="how-to-play">
+            <i class="fas fa-question-circle"></i> How to Play
+        </button>
+        <button class="menu-item" data-modal="your-solutions">
+            <i class="fas fa-history"></i> Your Solutions
+        </button>
+        <button class="menu-item" data-modal="history">
+            <i class="fas fa-calendar-alt"></i> History
+        </button>
+        <button class="menu-item" data-modal="stats">
+            <i class="fas fa-chart-bar"></i> Statistics
+        </button>
+        <button class="menu-item" data-modal="keyboard-shortcuts">
+            <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+        </button>
+        <button class="menu-item" data-modal="calendar-modal">
+            <i class="fas fa-calendar"></i> Play Previous Date
+        </button>
+        <button class="menu-item" id="hard-mode-toggle">
+            <i class="fas fa-skull"></i> Hard Mode
+            <span class="toggle-indicator">${gameState.hardMode ? 'ON' : 'OFF'}</span>
+        </button>
+        <button class="menu-item" id="beginner-mode-toggle">
+            <i class="fas fa-graduation-cap"></i> Beginner Mode
+            <span class="toggle-indicator">${gameState.beginnerMode ? 'ON' : 'OFF'}</span>
+        </button>
+        <button class="menu-item" id="dark-mode-toggle">
+            <i class="fas fa-moon"></i> Dark Mode
+            <span class="toggle-indicator">${gameState.darkMode ? 'ON' : 'OFF'}</span>
+        </button>
+    `;
+
+    // Add menu items to header
+    const headerContent = document.querySelector('.header-content');
+    headerContent.appendChild(menuItems);
+
+    // Show/hide menu on button click
+    menuButton.addEventListener('click', (e) => {
+        console.log('Menu button clicked');
+        menuItems.classList.toggle('active');
+        e.stopPropagation(); // Prevent document click from immediately closing
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!menuButton.contains(e.target) && !menuItems.contains(e.target)) {
+            menuItems.classList.remove('active');
+        }
+    });
+
+    // Handle menu item clicks
+    menuItems.addEventListener('click', (e) => {
+        const menuItem = e.target.closest('.menu-item');
+        if (menuItem) {
+            if (menuItem.id === 'hard-mode-toggle') {
+                gameState.hardMode = !gameState.hardMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.hardMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.hardMode);
+                gameState.updateGameState();
+                e.stopPropagation();
+            } else if (menuItem.id === 'beginner-mode-toggle') {
+                gameState.beginnerMode = !gameState.beginnerMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.beginnerMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.beginnerMode);
+                updateOperatorVisibility();
+                e.stopPropagation();
+            } else if (menuItem.id === 'dark-mode-toggle') {
+                gameState.darkMode = !gameState.darkMode;
+                gameState.savePreferences();
+                const toggleIndicator = menuItem.querySelector('.toggle-indicator');
+                toggleIndicator.textContent = gameState.darkMode ? 'ON' : 'OFF';
+                menuItem.classList.toggle('active', gameState.darkMode);
+                document.body.classList.toggle('dark-mode', gameState.darkMode);
+                e.stopPropagation();
+            } else {
+                const modalType = menuItem.dataset.modal;
+                if (modalType === 'calendar-modal') {
+                    const calendarModal = document.getElementById('calendar-modal');
+                    calendarModal.classList.add('active');
+                    updateCalendar();
+                } else {
+                    showModal(modalType);
+                }
+                menuItems.classList.remove('active');
+                e.stopPropagation();
+            }
+        }
+    });
+
+    // Handle modal close
+    modalClose.addEventListener('click', () => {
+        console.log('Modal close clicked');
+        modal.classList.remove('active');
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            console.log('Modal background clicked');
+            modal.classList.remove('active');
+        }
+    });
+
+    setupSolutionsModal();
+}
+
+function showModal(type) {
+    try {
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        if (!modalContent[type]) {
+            console.error('Modal type not found:', type);
+            return;
+        }
+
+        // Always reset the title first
+        modalTitle.textContent = modalContent[type].title;
+        
+        const content = typeof modalContent[type].content === 'function' 
+            ? modalContent[type].content()
+            : modalContent[type].content;
+            
+        if (type === 'your-solutions') {
+            const solutions = gameData.getTodaysSolutions();
+            console.log('Today\'s solutions:', solutions);
+        }
+        
+        modalBody.innerHTML = content;
+        modal.classList.add('active');
+    } catch (error) {
+        console.error('Error showing modal:', error);
+    }
+}
+
+function setupSolutionsModal() {
+    const modalBody = document.getElementById('modal-body');
+
+    // Handle individual solution sharing for today's solutions
+    modalBody.addEventListener('click', (e) => {
+        const solutionItem = e.target.closest('.solution-item');
+        const shareButton = e.target.closest('.solution-share');
+        
+        if (shareButton && solutionItem) {
+            // Check if we're in history view or today's solutions
+            const date = solutionItem.dataset.date;
+            const solutions = date ? 
+                gameData.solutions.filter(s => s.date.startsWith(date)) :
+                gameData.getTodaysSolutions();
+            
+            const index = parseInt(solutionItem.dataset.solutionIndex);
+            
+            if (!solutions || index >= solutions.length) {
+                console.error('Invalid solution index or no solutions available');
+                showMessage('Unable to share solution at this time', 'error');
+                return;
+            }
+            
+            const solution = solutions[index];
+            if (!solution || !solution.left || !solution.right) {
+                console.error('Invalid solution format:', solution);
+                showMessage('Unable to share solution at this time', 'error');
+                return;
+            }
+            
+            shareSolution(solution);
+            e.stopPropagation();
+        }
+    });
+
+    // Handle share all button
+    modalBody.addEventListener('click', (e) => {
+        if (e.target.closest('#share-all-btn')) {
+            const solutionsList = modalBody.querySelector('.solutions-list');
+            const date = solutionsList?.dataset.date;
+            const solutions = date ? 
+                gameData.solutions.filter(s => s.date.startsWith(date)) :
+                gameData.getTodaysSolutions();
+            
+            if (solutions && solutions.length > 0) {
+                shareAllSolutions(solutions);
+            } else {
+                showMessage('No solutions available to share', 'error');
+            }
+            e.stopPropagation();
+        }
+    });
+}
+
+function shareSolution(solution) {
+    if (!solution || !solution.left || !solution.right) {
+        console.error('Invalid solution object:', solution);
+        showMessage('Unable to share solution at this time', 'error');
+        return;
+    }
+    
+    const shareText = formatSolutionForSharing(solution);
+    copyToClipboard(shareText);
+    showMessage('Solution copied to clipboard!', 'success');
+}
+
+function shareAllSolutions(solutions) {
+    const shareText = solutions.map(formatSolutionForSharing).join('\n\n');
+    copyToClipboard(shareText);
+    showMessage('All solutions copied to clipboard!', 'success');
+}
+
+function formatSolutionForSharing(solution) {
+    if (!solution || !solution.left || !solution.right) {
+        console.error('Invalid solution format in formatting:', solution);
+        return 'Error formatting solution';
+    }
+    
+    const left = solution.left.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
+    const right = solution.right.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
+    return `${left} = ${right}\n${solution.points} points${solution.hardMode ? ' (Hard Mode)' : ''}`;
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).catch(err => {
+        console.error('Failed to copy text: ', err);
+        showMessage('Failed to copy to clipboard', 'error');
+    });
+}
+
+function showConfirmationDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'confirmation-dialog';
+    dialog.innerHTML = `
+        <h3>Clear Today's Solutions?</h3>
+        <p>Are you sure you want to clear all your solutions for today? This action cannot be undone.</p>
+        <div class="confirmation-actions">
+            <button class="modal-btn danger" id="confirm-clear">Yes, Clear Today's</button>
+            <button class="modal-btn" id="cancel-clear">Cancel</button>
+        </div>
+    `;
+
+    // Append to body instead of modal
+    document.body.appendChild(dialog);
+
+    dialog.querySelector('#confirm-clear').addEventListener('click', () => {
+        const today = new Date().toISOString().split('T')[0];
+        gameData.solutions = gameData.solutions.filter(solution => 
+            !solution.date.startsWith(today)
+        );
+        gameData.save();
+        dialog.remove();
+        showModal('your-solutions');
+        showMessage('Today\'s solutions cleared!', 'success');
+    });
+
+    dialog.querySelector('#cancel-clear').addEventListener('click', () => {
+        dialog.remove();
+    });
+}
+
+function showResetAllDataDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'confirmation-dialog';
+    dialog.innerHTML = `
+        <h3>Reset All Data?</h3>
+        <p>Are you sure you want to reset all your solutions and statistics? This action cannot be undone.</p>
+        <div class="confirmation-actions">
+            <button class="modal-btn danger" id="confirm-reset">Yes, Reset All Data</button>
+            <button class="modal-btn" id="cancel-reset">Cancel</button>
+        </div>
+    `;
+
+    // Append to body instead of modal
+    document.body.appendChild(dialog);
+
+    dialog.querySelector('#confirm-reset').addEventListener('click', () => {
+        // Reset all data
+        gameData.solutions = [];
+        gameData.stats = {
+            totalSolutions: 0,
+            totalPoints: 0,
+            highScore: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            averagePoints: 0,
+            lastPlayedDate: null
+        };
+        gameData.save();
+        dialog.remove();
+        showModal('history');
+        showMessage('All data has been reset!', 'success');
+    });
+
+    dialog.querySelector('#cancel-reset').addEventListener('click', () => {
+        dialog.remove();
+    });
+}
+
+// === Message Handling ===
+function showMessage(message, type = 'error') {
+    const messageElement = document.getElementById('error-message');
+    
+    // Clear any existing timeouts
+    if (messageElement.timeoutId) {
+        clearTimeout(messageElement.timeoutId);
+    }
+    
+    // Set the message content and type
+    messageElement.textContent = message;
+    messageElement.className = `error-message ${type}`;
+    
+    // Show the message with a slight delay to ensure the display:none is cleared
+    requestAnimationFrame(() => {
+        messageElement.style.display = 'block';
     });
     
-    // Check button functionality
-    const checkButton = document.getElementById('check-button');
-    checkButton.addEventListener('click', function() {
-        // Get expressions from both sides
-        const leftExpression = Array.from(
-            document.querySelectorAll('#left-side button')
-        )
-            .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**');
+    // Set up auto-hide after 5 seconds
+    messageElement.timeoutId = setTimeout(() => {
+        messageElement.style.display = 'none';
+    }, 5000);
+}
+
+function hideMessage() {
+    const messageElement = document.getElementById('error-message');
+    if (messageElement.timeoutId) {
+        clearTimeout(messageElement.timeoutId);
+    }
+    messageElement.style.display = 'none';
+}
+
+function setupHistoryModal() {
+    const modal = document.getElementById('modal');
+    const modalBody = modal.querySelector('.modal-body');
+    let currentDate = new Date();
+
+    // Handle calendar day clicks
+    modalBody.addEventListener('click', (e) => {
+        const calendarDay = e.target.closest('.calendar-day');
+        if (calendarDay && !calendarDay.classList.contains('empty')) {
+            const date = calendarDay.dataset.date;
+            const solutions = gameData.solutions.filter(s => s.date.startsWith(date));
+            
+            // Create date object in local timezone
+            const selectedDate = new Date(date + 'T00:00:00');
+            
+            // Update existing modal title
+            const modalTitle = document.getElementById('modal-title');
+            modalTitle.textContent = `Solutions for ${selectedDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}`;
+            
+            modalBody.innerHTML = `
+                <div class="solutions-list" data-date="${date}">
+                    ${solutions.length > 0 ? 
+                        solutions.map((solution, index) => `
+                            <div class="solution-item" data-solution-index="${index}" data-date="${date}">
+                                <div class="solution-header">
+                                    <div class="solution-points">
+                                        <i class="fas fa-star"></i>
+                                        ${solution.points} points
+                                        ${solution.hardMode ? '<span class="hard-mode-badge"><i class="fas fa-skull"></i> Hard Mode</span>' : ''}
+                                    </div>
+                                    ${solution.left && solution.right ? `
+                                        <button class="solution-share" aria-label="Share solution">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                <div class="solution-equation">
+                                    ${formatExpression(solution.left)} = ${formatExpression(solution.right)}
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<p>No solutions found for this date.</p>'
+                    }
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn" id="back-to-history">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Calendar
+                    </button>
+                    ${solutions.length > 0 ? `
+                        <button class="modal-btn primary" id="share-all-btn">
+                            <i class="fas fa-share-alt"></i>
+                            Share All Solutions
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
         
-        const rightExpression = Array.from(
-            document.querySelectorAll('#right-side button')
-        )
-            .map(btn => btn.textContent)
-            .join('')
-            .replace(/\^/g, '**');
+        // Handle back to calendar button
+        if (e.target.closest('#back-to-history')) {
+            const modalTitle = modal.querySelector('#modal-title');
+            modalTitle.textContent = 'Solution History';
+            showModal('history');
+        }
+
+        // Handle reset all data button
+        if (e.target.closest('#reset-all-data')) {
+            showResetAllDataDialog();
+        }
+
+        // Handle calendar navigation buttons
+        const prevMonthButton = e.target.closest('#prev-month');
+        const nextMonthButton = e.target.closest('#next-month');
         
-        // Calculate values
+        if (prevMonthButton) {
+            gameState.currentMonth--;
+            if (gameState.currentMonth < 0) {
+                gameState.currentMonth = 11;
+                gameState.currentYear--;
+            }
+            // Update the calendar content
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const firstDay = new Date(gameState.currentYear, gameState.currentMonth, 1);
+            const lastDay = new Date(gameState.currentYear, gameState.currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Update month display
+            const calendarMonth = document.querySelector('.calendar-header h3');
+            calendarMonth.textContent = `${monthNames[gameState.currentMonth]} ${gameState.currentYear}`;
+            
+            // Clear existing days
+            const calendarDays = document.querySelector('.calendar-days');
+            calendarDays.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                calendarDays.appendChild(createCalendarDay(''));
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(gameState.currentYear, gameState.currentMonth, day);
+                const dateStr = date.toISOString().split('T')[0];
+                const hasSolutions = gameData.solutions.some(s => s.date.startsWith(dateStr));
+                const isToday = day === new Date().getDate() && 
+                              gameState.currentMonth === new Date().getMonth() && 
+                              gameState.currentYear === new Date().getFullYear();
+                
+                const dayElement = createCalendarDay(day, date, hasSolutions, isToday);
+                calendarDays.appendChild(dayElement);
+            }
+        }
+        
+        if (nextMonthButton) {
+            gameState.currentMonth++;
+            if (gameState.currentMonth > 11) {
+                gameState.currentMonth = 0;
+                gameState.currentYear++;
+            }
+            // Update the calendar content
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const firstDay = new Date(gameState.currentYear, gameState.currentMonth, 1);
+            const lastDay = new Date(gameState.currentYear, gameState.currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Update month display
+            const calendarMonth = document.querySelector('.calendar-header h3');
+            calendarMonth.textContent = `${monthNames[gameState.currentMonth]} ${gameState.currentYear}`;
+            
+            // Clear existing days
+            const calendarDays = document.querySelector('.calendar-days');
+            calendarDays.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                calendarDays.appendChild(createCalendarDay(''));
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(gameState.currentYear, gameState.currentMonth, day);
+                const dateStr = date.toISOString().split('T')[0];
+                const hasSolutions = gameData.solutions.some(s => s.date.startsWith(dateStr));
+                const isToday = day === new Date().getDate() && 
+                              gameState.currentMonth === new Date().getMonth() && 
+                              gameState.currentYear === new Date().getFullYear();
+                
+                const dayElement = createCalendarDay(day, date, hasSolutions, isToday);
+                calendarDays.appendChild(dayElement);
+            }
+        }
+    });
+
+    // Handle solution sharing in history view
+    modalBody.addEventListener('click', (e) => {
+        const solutionItem = e.target.closest('.solution-item');
+        const shareButton = e.target.closest('.solution-share');
+        
+        if (shareButton && solutionItem) {
+            const index = parseInt(solutionItem.dataset.solutionIndex);
+            const date = solutionItem.dataset.date;
+            const solutions = gameData.solutions.filter(s => s.date.startsWith(date));
+            
+            if (!solutions || index >= solutions.length) {
+                console.error('Invalid solution index or no solutions available');
+                showMessage('Unable to share solution at this time', 'error');
+                return;
+            }
+            
+            const solution = solutions[index];
+            if (!solution || !solution.left || !solution.right) {
+                console.error('Invalid solution format:', solution);
+                showMessage('Unable to share solution at this time', 'error');
+                return;
+            }
+            
+            shareSolution(solution);
+            e.stopPropagation();
+        }
+
+        // Handle share all button in history view
+        if (e.target.closest('#share-all-btn')) {
+            const solutionsList = modalBody.querySelector('.solutions-list');
+            const date = solutionsList.dataset.date;
+            const solutions = gameData.solutions.filter(s => s.date.startsWith(date));
+            
+            if (solutions && solutions.length > 0) {
+                shareAllSolutions(solutions);
+            } else {
+                showMessage('No solutions available to share', 'error');
+            }
+            e.stopPropagation();
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Set current year in footer
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // Set header date
+    document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
+    
+    // Load saved preferences
+    gameState.loadPreferences();
+    
+    // Setup menu and modal
+    setupMenu();
+    setupCalendarModal();
+    
+    // Initialize date data
+    window.dateNumbers = getDateNumbers(gameState.selectedDate);
+    
+    // Initialize game UI
+    initializeUI();
+    setupEventListeners();
+    gameState.updateGameState();
+
+    // === Calendar Modal Functions ===
+    function setupCalendarModal() {
+        const calendarModal = document.getElementById('calendar-modal');
+        const headerDate = document.getElementById('header-date');
+        const closeButton = calendarModal.querySelector('.modal-close');
+        const prevMonthButton = document.getElementById('prev-month');
+        const nextMonthButton = document.getElementById('next-month');
+        
+        // Event Listeners
+        headerDate.addEventListener('click', () => {
+            calendarModal.classList.add('active');
+            updateCalendar();
+        });
+        
+        closeButton.addEventListener('click', () => {
+            calendarModal.classList.remove('active');
+        });
+        
+        prevMonthButton.addEventListener('click', () => {
+            gameState.currentMonth--;
+            if (gameState.currentMonth < 0) {
+                gameState.currentMonth = 11;
+                gameState.currentYear--;
+            }
+            updateCalendar();
+        });
+        
+        nextMonthButton.addEventListener('click', () => {
+            gameState.currentMonth++;
+            if (gameState.currentMonth > 11) {
+                gameState.currentMonth = 0;
+                gameState.currentYear++;
+            }
+            updateCalendar();
+        });
+        
+        // Close modal when clicking outside
+        calendarModal.addEventListener('click', (e) => {
+            if (e.target === calendarModal) {
+                calendarModal.classList.remove('active');
+            }
+        });
+        
+        // Initial calendar update
+        updateCalendar();
+    }
+    
+    // === Game Logic Functions ===
+    function calculatePoints(expression) {
+        const pointValues = {
+            '+': 1, '-': 1,
+            '*': 2, '/': 2, '%': 2,
+            '^': 3, '√': 3,
+            '!': 4, '|': 3, '&': 3,
+            'abs': 4, 'log': 4
+        };
+        
+        return expression.split(/([+\-*/%^√!|&]|abs|log)/).reduce((points, char) => 
+            points + (pointValues[char] || 0), 0);
+    }
+    
+    function addButtonToEquation(sourceButton) {
+        gameState.addButtonToEquation(sourceButton);
+    }
+    
+    // Helper function to handle button removal
+    function handleButtonRemoval(buttonToRemove, sourceButton, relatedButtons = []) {
+        gameState.handleButtonRemoval(buttonToRemove, sourceButton, relatedButtons);
+    }
+    
+    // === Initialization Functions ===
+    function initializeUI() {
+        gameState.initializeDateButtons();
+        initializeOperatorButtons();
+        initializeDataManagement();
+        setupKeyboardControls();
+        updateOperatorVisibility();
+    }
+    
+    function initializeOperatorButtons() {
+        const operators = [
+            // Basic Operators (1 point)
+            { 
+                symbol: '+', 
+                type: 'basic-1',
+                tooltip: 'Addition\n2 + 3 = 5\nCombines two numbers together'
+            },
+            { 
+                symbol: '-', 
+                type: 'basic-1',
+                tooltip: 'Subtraction\n5 - 3 = 2\nFinds the difference between numbers'
+            },
+            
+            // Basic Operators (2 points)
+            { 
+                symbol: '*', 
+                type: 'basic-2',
+                tooltip: 'Multiplication\n4 × 5 = 20\nRepeated addition of a number'
+            },
+            { 
+                symbol: '/', 
+                type: 'basic-2',
+                tooltip: 'Division\n10 ÷ 2 = 5\nSplits a number into equal parts'
+            },
+            { 
+                symbol: '%', 
+                type: 'basic-2',
+                tooltip: 'Modulo\n7 mod 3 = 1\nFinds the remainder after division'
+            },
+            
+            // Grouping
+            { 
+                symbol: '(', 
+                type: 'grouping',
+                tooltip: 'Opening Parenthesis\n2 × (3 + 4) = 14\nGroups operations together'
+            },
+            { 
+                symbol: ')', 
+                type: 'grouping',
+                tooltip: 'Closing Parenthesis\n(2 + 3) × 4 = 20\nGroups operations together'
+            },
+            
+            // Advanced Operators (3 points)
+            { 
+                symbol: '^', 
+                type: 'advanced',
+                tooltip: 'Exponent\n2^3 = 8\nRaises a number to a power'
+            },
+            { 
+                symbol: '√', 
+                type: 'function',
+                tooltip: 'Square Root\n√16 = 4\nFinds the number that when squared equals input'
+            },
+            { 
+                symbol: '|', 
+                type: 'advanced',
+                tooltip: 'Bitwise OR\nExample: 5|3 = 7\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n7 = 111  (4 + 2 + 1)\n\nIf either bit is 1, result is 1\nLike combining two sets'
+            },
+            { 
+                symbol: '&', 
+                type: 'advanced',
+                tooltip: 'Bitwise AND\nExample: 5&3 = 1\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n1 = 001  (0 + 0 + 1)\n\nOnly if both bits are 1, result is 1\nLike finding what two sets share'
+            },
+            
+            // Function Operators (4 points)
+            { 
+                symbol: 'abs', 
+                type: 'function',
+                tooltip: 'Absolute Value\nExample: abs(-5) = 5\n\nParenthesis added automatically\nRemoves the negative sign\nReturns how far a number is from zero'
+            },
+            { 
+                symbol: 'log', 
+                type: 'function',
+                tooltip: 'Base-10 Logarithm\nExample: log(100) = 2\n\nParenthesis added automatically\nAnswers: "10 to what power gives this number?"\n\nlog(1000) = 3 because 10³ = 1000'
+            },
+            { 
+                symbol: '!', 
+                type: 'function',
+                tooltip: 'Factorial\nExample: 5! = 120\n\nMultiplies all whole numbers from 1 to n:\n5! = 5 × 4 × 3 × 2 × 1 = 120\n3! = 3 × 2 × 1 = 6\n1! = 1\n0! = 1 (by definition)'
+            }
+        ];
+        
+        const container = document.getElementById('operator-buttons');
+        operators.forEach(op => {
+            const btn = gameState.createButton(op.symbol, 'operator');
+            btn.setAttribute('data-type', op.type);
+            btn.setAttribute('data-tooltip', op.tooltip);
+            container.appendChild(btn);
+        });
+    }
+    
+    // === Event Listeners Setup ===
+    function setupEventListeners() {
+        setupSideClickListeners();
+        setupNumberButtonListeners();
+        setupOperatorButtonListeners();
+        setupActionButtonListeners();
+        setupKeyboardControls();
+    }
+    
+    function setupSideClickListeners() {
+        ['left-side', 'right-side'].forEach(sideId => {
+            document.getElementById(sideId).addEventListener('click', e => {
+                if (e.target === e.currentTarget) {
+                    gameState.isLeftSide = sideId === 'left-side';
+                    gameState.updateActiveSide();
+                }
+            });
+        });
+    }
+    
+    function setupNumberButtonListeners() {
+        document.querySelectorAll('#date-buttons .number').forEach(button => {
+            button.addEventListener('click', function() {
+                if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                    hideMessage();
+                    this.disabled = true;
+                    this.classList.add('disabled');
+                    gameState.currentNumberIndex++;
+                    gameState.addButtonToEquation(this);
+                } else {
+                    showMessage('Please use numbers in the order they appear in the date.');
+                }
+            });
+        });
+    }
+    
+    function setupOperatorButtonListeners() {
+        document.querySelectorAll('#operator-buttons .operator').forEach(button => 
+            button.addEventListener('click', () => gameState.addButtonToEquation(button))
+        );
+    }
+    
+    function setupActionButtonListeners() {
+        document.getElementById('clear-button').addEventListener('click', () => gameState.handleClear());
+        document.getElementById('check-button').addEventListener('click', handleCheck);
+    }
+    
+    function handleCheck() {
+        const leftSide = document.getElementById('left-side');
+        const rightSide = document.getElementById('right-side');
+        const leftExpression = gameState.getExpressionFromSide(leftSide);
+        const rightExpression = gameState.getExpressionFromSide(rightSide);
+        
+        if (!validateEquation(leftExpression, rightExpression)) {
+            gameData.resetStreak();
+            return;
+        }
+        
         const leftValue = safeEval(leftExpression);
         const rightValue = safeEval(rightExpression);
         
-        // Get used numbers
-        const usedNumbers = Array.from(
-            document.querySelectorAll('#left-side button, #right-side button')
-        )
+        if (leftValue === rightValue) {
+            const points = calculatePoints(leftExpression) + calculatePoints(rightExpression);
+            showMessage(
+                `Correct! ${formatExpression(leftExpression.replace(/\*\*/g, '^'))} = ${formatExpression(rightExpression.replace(/\*\*/g, '^'))} (Points: ${points})`,
+                'success'
+            );
+            gameData.addSolution(leftExpression, rightExpression, points, gameState.selectedDate);
+        } else {
+            showMessage('Incorrect. The left side does not equal the right side.');
+            gameData.resetStreak();
+        }
+    }
+    
+    function validateEquation(leftExpression, rightExpression) {
+        if (!leftExpression || !rightExpression) {
+            showMessage('Please add numbers and operators to both sides of the equation.');
+            return false;
+        }
+        
+        const usedNumbers = Array.from(document.querySelectorAll('.equation-side button'))
             .map(btn => btn.textContent)
             .filter(val => /^\d+$/.test(val))
             .join('');
         
-        // Check if all date numbers were used when required
-        const allDateNumbers = dateNumbers.map(num => num.toString()).join('');
-        const allNumbersUsed = !difficultySettings[currentDifficulty].requireAllNumbers || 
-                             (difficultySettings[currentDifficulty].requireAllNumbers && usedNumbers.length >= allDateNumbers.length);
-        
-        // Check for required operators in hard mode
-        let hasRequiredOperators = true;
-        if (currentDifficulty === 'hard') {
-            const combinedExpression = leftExpression + rightExpression;
-            const hasAddition = combinedExpression.includes('+');
-            const hasSubtraction = combinedExpression.includes('-');
-            const hasMultiplication = combinedExpression.includes('*');
-            const hasDivision = combinedExpression.includes('/');
-            hasRequiredOperators = hasAddition && hasSubtraction && hasMultiplication && hasDivision;
+        if (usedNumbers.length < window.dateNumbers.length) {
+            showMessage('You must use all numbers from the date.');
+            return false;
         }
         
-        // Validate the solution
-        if (leftExpression === '' || rightExpression === '') {
-            showError('Please add numbers and operators to both sides of the equation.');
-        } else if (leftValue === 'Error' || rightValue === 'Error') {
-            showError('Invalid expression. Please check your equation.');
-        } else if (!allNumbersUsed) {
-            showError('You must use all numbers from the date.');
-        } else if (!hasRequiredOperators && currentDifficulty === 'hard') {
-            showError('Hard mode requires using at least one +, one -, one *, and one / operator.');
-        } else if (leftValue === rightValue) {
-            // Valid solution!
-            hideError();
-            
-            // Calculate points based on difficulty
-            let points;
-            if (currentDifficulty === 'easy') {
-                points = difficultySettings[currentDifficulty].fixedPoints; // Always 1 point for easy mode
-            } else {
-                // Calculate points based on operators used
-                points = calculatePoints(leftExpression) + calculatePoints(rightExpression);
-                points = Math.floor(points * difficultySettings[currentDifficulty].pointMultiplier);
-            }
-            
-            // Save the solution
-            if (saveSolution(leftExpression, rightExpression, points)) {
-                // Display successful solution
-                showModal('Correct Solution!', `
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <i class="fas fa-check-circle" style="color: #2ecc71; font-size: 3rem;"></i>
-                    </div>
-                    <p>Your equation is correct!</p>
-                    <div class="solution-display">
-                        ${formatExpression(leftExpression.replace(/\*\*/g, '^'))} = ${formatExpression(rightExpression.replace(/\*\*/g, '^'))}
-                    </div>
-                    <p>Points earned: <span class="badge badge-${currentDifficulty}">${points}</span></p>
-                `);
-            } else {
-                showError('You already found this solution!');
-            }
-        } else {
-            showError('Incorrect. The left side does not equal the right side.');
-        }
-    });
-    
-    // Difficulty selector functionality
-    const difficultySelect = document.getElementById('difficulty');
-    difficultySelect.addEventListener('change', function() {
-        currentDifficulty = this.value;
-        document.getElementById('difficulty-info').textContent = difficultySettings[currentDifficulty].description;
-
-        // Save preference
-        localStorage.setItem(`${storagePrefix}difficulty`, currentDifficulty);
-
-        // Reset the game when difficulty changes
-        clearButton.click();
-    });
-
-    // Load saved difficulty if available
-    const savedDifficulty = localStorage.getItem(`${storagePrefix}difficulty`);
-    if (savedDifficulty && difficultySettings[savedDifficulty]) {
-        currentDifficulty = savedDifficulty;
-        difficultySelect.value = currentDifficulty;
-        document.getElementById('difficulty-info').textContent = difficultySettings[currentDifficulty].description;
+        return true;
     }
     
-    // Add keyboard support
-    document.addEventListener('keydown', function(event) {
-        const key = event.key;
-        
-        // Number keys
-        if (!isNaN(parseInt(key))) {
-            // Find matching number button that's not disabled
-            const numberButton = Array.from(numberButtons).find(btn => 
-                !btn.disabled && btn.textContent === key
-            );
-            
-            if (numberButton) {
-                if (currentDifficulty === 'easy' || parseInt(key) === dateNumbers[currentNumberIndex]) {
-                    numberButton.click();
-                    return;
-                }
-            }
-        }
-        
-        // Operator keys
-        if (['+', '-', '*', '/', '%', '(', ')', '^'].includes(key)) {
-            const operatorButton = Array.from(operatorButtons).find(btn => 
-                btn.textContent === key
-            );
-            
-            if (operatorButton) {
-                operatorButton.click();
-                return;
-            }
-        }
-        
-        // Tab key to switch sides
-        if (key === 'Tab') {
-            event.preventDefault();
-            isLeftSide = !isLeftSide;
-            updateActiveSide();
-        }
-        
-        // Enter key to check
-        if (key === 'Enter') {
-            checkButton.click();
-        }
-        
-        // Backspace to remove last element
-        if (key === 'Backspace') {
-            const activeSide = isLeftSide ? leftSide : rightSide;
-            if (activeSide.lastElementChild) {
-                activeSide.lastElementChild.click();
-            }
-        }
-        
-        // Escape to clear
-        if (key === 'Escape') {
-            clearButton.click();
-        }
-    });
-    
-    // Navigation links functionality
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all links
-            document.querySelectorAll('.nav-link').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Add active class to clicked link
-            this.classList.add('active');
-            
-            // Extract the section name from the link text
-            const linkText = this.textContent.trim();
-            const section = linkText.includes('Rules') ? 'rules' : 
-                           linkText.includes('Solutions') ? 'solutions' :
-                           linkText.includes('Shortcuts') ? 'shortcuts' : 'play';
-            
-            if (section === 'rules') {
-                showModal('Game Rules', `
-                    <div class="rules-container">
-                        <div class="rules-section">
-                            <h3><i class="fas fa-dice"></i> How to Play</h3>
-                            <p>Create equations where both sides are equal using today's date digits and operators.</p>
-                        </div>
-                        
-                        <div class="rules-section">
-                            <h3><i class="fas fa-level-up-alt"></i> Difficulty Levels</h3>
-                            <ul class="rules-list">
-                                <li><span class="badge badge-easy">Easy</span> Use any date digits in any order <br>
-                                <small>1 point per correct solution</small></li>
-                                <li><span class="badge badge-medium">Medium</span> Must use all date digits in order <br>
-                                <small>Points based on operators used</small></li>
-                                <li><span class="badge badge-hard">Hard</span> Must use all date digits in order with +, -, *, and / <br>
-                                <small>Double points!</small></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="rules-section">
-                            <h3><i class="fas fa-calculator"></i> Operator Points</h3>
-                            <ul class="rules-list compact">
-                                <li><strong>+</strong> or <strong>-</strong> : 1 point each</li>
-                                <li><strong>×</strong>, <strong>÷</strong> or <strong>%</strong> : 2 points each</li>
-                                <li><strong>^</strong> (power) : 3 points each</li>
-                            </ul>
-                        </div>
-                    </div>
-                `);
-            } else if (section === 'solutions') {
-                // Get solutions from local storage
-                const solutions = getSavedSolutions();
-                
-                // Create formatted solutions HTML
-                const solutionsHTML = solutions.length > 0 
-                    ? solutions
-                        .sort((a, b) => b.points - a.points)
-                        .map(solution => {
-                            const leftFormatted = formatExpression(solution.left.replace(/\*\*/g, '^'));
-                            const rightFormatted = formatExpression(solution.right.replace(/\*\*/g, '^'));
+    function updateGameState() {
+        gameState.updateGameState();
+    }
 
-                            return `
-                                <div class="solution-item">
-                                    <div class="solution-header">
-                                        <p class="badge badge-${solution.difficulty}">${solution.difficulty}</p>
-                                        <p class="solution-date badge badge-${solution.difficulty}">${new Date(solution.timestamp).toLocaleDateString()}</p>
-                                        <strong class="solution-points">${solution.points} pts</strong>
-                                    </div>
-                                    <div class="solution-equation">
-                                        ${leftFormatted} = ${rightFormatted}
-                                    </div>
-                                </div>
-                            `;
-                        })
-                        .join('')
-                    : '<p class="no-solutions">No solutions found yet. Start solving!</p>';
-                
-                showModal('Your Solutions', `
-                    <div class="solutions-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-star"></i>
-                            <span class="stat-value">${totalPoints}</span>
-                            <span class="stat-label">Total Points</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span class="stat-value">${solutionsCount}</span>
-                            <span class="stat-label">Solutions</span>
-                        </div>
-                    </div>
-                    
-                    <div class="solutions-list-container">
-                        <h3>Your Equations</h3>
-                        <div class="solutions-list">
-                            ${solutionsHTML}
-                        </div>
-                    </div>
-                `);
-            } else if (section === 'shortcuts') {
-                showModal('Keyboard Shortcuts', `
-                    <div class="shortcuts-container">
-                        <div class="shortcuts-section">
-                            <h3><i class="fas fa-keyboard"></i> Input Shortcuts</h3>
-                            <ul class="shortcuts-list">
-                                <lable>Add date digits</lable>
-                                <li><kbd>0</kbd>-<kbd>9</kbd></li>
-                                <lable>Add operators</lable>
-                                <li><kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> <kbd>%</kbd> <kbd>(</kbd> <kbd>)</kbd> <kbd>^</kbd></li>
-                            </ul>
-                        </div>
-                        
-                        <div class="shortcuts-section">
-                            <h3><i class="fas fa-mouse-pointer"></i> Navigation Shortcuts</h3>
-                            <ul class="shortcuts-list">
-                                <label>Switch between left/right side</label>
-                                <li><kbd>Tab</kbd></li>
-                                <label>Check equation</label>
-                                <li><kbd>Enter</kbd></li>
-                                <label>Remove last element</label>
-                                <li><kbd>Backspace</kbd></li>
-                                <label>Clear equation</label>
-                                <li><kbd>Esc</kbd></li>
-                            </ul>
-                        </div>
-                    </div>
-                `);
+    // Add factorial function for ! operator
+    function factorial(n) {
+        if (n < 0) return NaN;
+        if (n === 0) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) result *= i;
+        return result;
+    }
+
+    // Add keyboard support
+    function setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            // Number keys (0-9)
+            if (/^\d$/.test(e.key)) {
+                const numberButtons = document.querySelectorAll('#date-buttons .number');
+                numberButtons.forEach(btn => {
+                    if (btn.textContent === e.key && !btn.disabled) {
+                        btn.click();
+                    }
+                });
+            }
+            
+            // Operator keys
+            const operatorMap = {
+                '+': '+', '-': '-', '*': '*', '/': '/',
+                '(': '(', ')': ')', '^': '^',
+                '%': '%'
+            };
+            
+            if (operatorMap[e.key]) {
+                const operatorButtons = document.querySelectorAll('#operator-buttons .operator');
+                operatorButtons.forEach(btn => {
+                    if (btn.textContent === operatorMap[e.key]) {
+                        btn.click();
+                    }
+                });
+            }
+            
+            // Special keys
+            if (e.key === 'Enter') {
+                document.getElementById('check-button').click();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('clear-button').click();
+            }
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                gameState.isLeftSide = !gameState.isLeftSide;
+                gameState.updateActiveSide();
             }
         });
-    });
-    
-    // Initialize
-    updateActiveSide();
-    updateCurrentValues();
-    hideError();
-    loadStats();
+    }
+
+    // Initialize data management
+    function initializeDataManagement() {
+        gameData.load();
+        
+        // Check if it's a new day
+        const lastSolution = gameData.solutions[gameData.solutions.length - 1];
+        if (lastSolution) {
+            const lastDate = new Date(lastSolution.date).toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+            if (lastDate !== today) {
+                gameData.resetStreak();
+            }
+        }
+    }
+
+    setupHistoryModal();
 });
+
+function handleOperatorClick(event) {
+    const operator = event.target.textContent;
+    const input = document.getElementById('calculator-input');
+    const cursorPos = input.selectionStart;
+    const currentValue = input.value;
+    
+    let newValue;
+    if (['log', 'abs', '√'].includes(operator)) {
+        // Add opening parenthesis for functions
+        newValue = currentValue.slice(0, cursorPos) + operator + '(' + currentValue.slice(cursorPos);
+        input.value = newValue;
+        input.setSelectionRange(cursorPos + operator.length + 1, cursorPos + operator.length + 1);
+    } else {
+        // Handle other operators normally
+        newValue = currentValue.slice(0, cursorPos) + operator + currentValue.slice(cursorPos);
+        input.value = newValue;
+        input.setSelectionRange(cursorPos + operator.length, cursorPos + operator.length);
+    }
+    
+    updatePoints();
+    input.focus();
+}
