@@ -6,14 +6,21 @@
     <meta name="description" content="A mathematical puzzle game using today's date">
     <title>crack-o-date</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <header class="site-header">
+        <div class="header-content">
+            <h1 class="site-title">crack-o-date</h1>
+            <div class="header-date" id="header-date"></div>
+            <button class="menu-button" aria-label="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
     <main class="container">
         <div class="game-container">
-            <header class="date-display">
-                <h1 id="current-date"></h1>
-            </header>
-
             <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
 
             <section id="date-buttons" class="button-container" aria-label="Date numbers"></section>
@@ -53,6 +60,28 @@
             </div>
         </div>
     </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>Made with ❤️ by Damon</p>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span id="current-year"></span> crack-o-date. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
