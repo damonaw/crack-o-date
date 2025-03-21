@@ -314,43 +314,20 @@ const modalContent = {
     'visitor-stats': {
         title: 'Visitor Statistics',
         content: async () => {
-            const stats = await visitorTracking.getStats() || JSON.parse(localStorage.getItem('visitor_stats') || '{}');
-            const today = new Date().toISOString().split('T')[0];
-            const todayStats = stats.daily_stats?.[today] || { total: 0, unique: 0 };
-            
+            const stats = await visitorTracking.getStats();
             return `
-                <div class="stats-grid">
+                <div class="stats-container">
                     <div class="stat-item">
-                        <span class="stat-value">${stats.total_visitors || 0}</span>
-                        <span class="stat-label">Total Visitors</span>
+                        <div class="stat-value">${stats.total_visitors}</div>
+                        <div class="stat-label">Total Visitors</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">${stats.unique_visitors || 0}</span>
-                        <span class="stat-label">Unique Visitors</span>
+                        <div class="stat-value">${stats.unique_visitors}</div>
+                        <div class="stat-label">Unique Visitors</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">${todayStats.total}</span>
-                        <span class="stat-label">Today's Visitors</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">${todayStats.unique}</span>
-                        <span class="stat-label">Today's Unique</span>
-                    </div>
-                </div>
-                <div class="stats-chart">
-                    <h3>Daily Visitors</h3>
-                    <div class="chart-container">
-                        ${Object.entries(stats.daily_stats || {})
-                            .sort((a, b) => b[0].localeCompare(a[0]))
-                            .slice(0, 7)
-                            .map(([date, data]) => `
-                                <div class="chart-bar">
-                                    <div class="bar-value" style="height: ${(data.unique / Math.max(...Object.values(stats.daily_stats).map(d => d.unique))) * 100}%">
-                                        <span class="bar-label">${data.unique}</span>
-                                    </div>
-                                    <span class="bar-date">${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                                </div>
-                            `).join('')}
+                        <div class="stat-value">${stats.daily_stats[new Date().toISOString().split('T')[0]]?.total || 0}</div>
+                        <div class="stat-label">Today's Visitors</div>
                     </div>
                 </div>
             `;
