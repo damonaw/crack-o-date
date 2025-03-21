@@ -73,7 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
             .replace(/(\d+)\s*\(/g, '$1*(')
             .replace(/\)\s*(\d+)/g, ')*$1')
-            .replace(/-\s*\(/g, '-1*(');
+            .replace(/-\s*\(/g, '-1*(')
+            .replace(/√(\d+)/g, 'Math.sqrt($1)')
+            .replace(/(\d+)!/g, 'factorial($1)')
+            .replace(/\|(\d+)\|/g, 'Math.abs($1)')
+            .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')
+            .replace(/log\(([^)]+)\)/g, 'Math.log10($1)')
+            .replace(/(\d+)\s*&\s*(\d+)/g, '($1&$2)')
+            .replace(/(\d+)\s*\|\s*(\d+)/g, '($1|$2)');
     }
     
     function formatExpression(expression) {
@@ -85,7 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\(/g, '<span class="paren">(</span>')
             .replace(/\)/g, '<span class="paren">)</span>')
             .replace(/\^/g, '<sup>')
-            .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>');
+            .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>')
+            .replace(/Math\.sqrt/g, '√')
+            .replace(/Math\.abs/g, '|')
+            .replace(/Math\.log10/g, 'log')
+            .replace(/&/g, '∧')
+            .replace(/\|(?![^|]*\|)/g, '∨');
     }
     
     // === UI Update Functions ===
@@ -133,10 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const pointValues = {
             '+': 1, '-': 1,
             '*': 2, '/': 2, '%': 2,
-            '^': 3
+            '^': 3, '√': 3,
+            '!': 4, '|': 3, '&': 3,
+            'abs': 4, 'log': 4
         };
         
-        return expression.split('').reduce((points, char) => 
+        return expression.split(/([+\-*/%^√!|&]|abs|log)/).reduce((points, char) => 
             points + (pointValues[char] || 0), 0);
     }
     
@@ -190,12 +204,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function initializeOperatorButtons() {
-        const operators = ['+', '-', '*', '/', '%', '(', ')', '^'];
-        const container = document.getElementById('operator-buttons');
+        const operators = [
+            '+', '-', '*', '/', '%', 
+            '(', ')', 
+            '^', '√',
+            '!', '|', '&',
+            'abs', 'log'
+        ];
         
-        operators.forEach(op => 
-            container.appendChild(createButton(op, 'operator'))
-        );
+        const container = document.getElementById('operator-buttons');
+        operators.forEach(op => {
+            const btn = createButton(op, 'operator');
+            if (op.length > 1) {
+                btn.classList.add('function-operator');
+            }
+            container.appendChild(btn);
+        });
     }
     
     // === Event Listeners Setup ===
@@ -302,5 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActiveSide();
         updateCurrentValues();
         hideMessage();
+    }
+
+    // Add factorial function for ! operator
+    function factorial(n) {
+        if (n < 0) return NaN;
+        if (n === 0) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) result *= i;
+        return result;
     }
 });

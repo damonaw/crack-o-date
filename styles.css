@@ -209,3 +209,19 @@ body {
     color: #2ecc71;
     background-color: #d5f5e3;
 }
+
+.btn.operator.function-operator {
+    font-size: 0.9rem;
+    min-width: 3.5rem;
+    background-color: #9b59b6;
+    color: white;
+    border-color: #8e44ad;
+}
+
+.btn.operator.function-operator:hover:not(:disabled) {
+    background-color: #8e44ad;
+}
+
+.btn.operator.function-operator:active:not(:disabled) {
+    background-color: #7d3c98;
+}
