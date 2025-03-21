@@ -1,0 +1,184 @@
+/**
+ * Calendar Component
+ * @component
+ * @example
+ * <div class="calendar-grid">
+ *   <div class="calendar-weekdays">
+ *     <div>Sun</div>
+ *     <!-- ... other weekdays ... -->
+ *   </div>
+ *   <div class="calendar-days" id="calendar-days">
+ *     <div class="calendar-day empty"></div>
+ *     <div class="calendar-day today">
+ *       <span class="calendar-day-number">1</span>
+ *       <i class="calendar-day-icon"></i>
+ *     </div>
+ *     <!-- ... other days ... -->
+ *   </div>
+ * </div>
+ */
+
+/* Base Calendar Component */
+.calendar-grid {
+    --calendar-header-bg: var(--gray-50);
+    --calendar-header-border: var(--gray-200);
+    --calendar-day-bg: var(--background-color);
+    --calendar-day-hover-bg: var(--gray-50);
+    --calendar-day-text: var(--gray-700);
+    --calendar-day-selected-bg: rgba(var(--primary-color-rgb), 0.1);
+    --calendar-day-selected-text: var(--primary-color);
+    --calendar-day-today-bg: rgba(var(--primary-color-rgb), 0.05);
+    --calendar-day-today-text: var(--primary-color);
+    --calendar-day-solutions-bg: rgba(46, 204, 113, 0.1);
+    --calendar-day-solutions-text: var(--secondary-color);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--calendar-header-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--calendar-header-border);
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+
+.calendar-nav {
+    background: var(--background-color);
+    border: 1px solid var(--gray-300);
+    color: var(--gray-600);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-nav:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--calendar-header-bg);
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--calendar-header-border);
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    font-weight: 600;
+    color: var(--gray-600);
+    font-size: 0.8rem;
+    padding: var(--spacing-xs) 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--gray-200);
+    padding: 1px;
+}
+
+.calendar-day {
+    aspect-ratio: 1.2;
+    background: var(--calendar-day-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: var(--spacing-sm);
+    min-height: 40px;
+    gap: var(--spacing-xs);
+}
+
+.calendar-day:not(.empty):hover {
+    background: var(--calendar-day-hover-bg);
+    transform: scale(1.05);
+}
+
+.calendar-day.empty {
+    background: var(--calendar-day-hover-bg);
+    cursor: default;
+}
+
+.calendar-day.selected {
+    background: var(--calendar-day-selected-bg);
+}
+
+.calendar-day.selected .calendar-day-number {
+    color: var(--calendar-day-selected-text);
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    background: var(--calendar-day-today-bg);
+}
+
+.calendar-day.today .calendar-day-number {
+    color: var(--calendar-day-today-text);
+    font-weight: 600;
+}
+
+.calendar-day.has-solutions {
+    background: var(--calendar-day-solutions-bg);
+}
+
+.calendar-day.has-solutions .calendar-day-number {
+    color: var(--calendar-day-solutions-text);
+}
+
+.calendar-day-number {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+.calendar-day-icon {
+    position: static;
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+/* Calendar Modal Variant */
+#calendar-modal .calendar-grid {
+    --calendar-header-bg: var(--gray-50);
+    --calendar-header-border: var(--gray-200);
+    --calendar-day-bg: var(--background-color);
+    --calendar-day-hover-bg: var(--gray-50);
+    --calendar-day-text: var(--gray-700);
+    --calendar-day-selected-bg: rgba(var(--primary-color-rgb), 0.1);
+    --calendar-day-selected-text: var(--primary-color);
+    --calendar-day-today-bg: rgba(var(--primary-color-rgb), 0.05);
+    --calendar-day-today-text: var(--primary-color);
+    --calendar-day-solutions-bg: rgba(46, 204, 113, 0.1);
+    --calendar-day-solutions-text: var(--secondary-color);
+}
+
+#calendar-modal .modal-content {
+    max-width: 400px;
+}
+
+/* Responsive Design */
+@media (max-width: var(--breakpoint-sm)) {
+    .calendar-day {
+        min-height: 35px;
+    }
+
+    .calendar-day-number {
+        font-size: 0.8rem;
+    }
+} 

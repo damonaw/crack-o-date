@@ -1,0 +1,240 @@
+/**
+ * Button Components
+ * @component
+ * @example
+ * <!-- Number Button -->
+ * <button class="btn number-btn">1</button>
+ * 
+ * <!-- Operator Button -->
+ * <button class="btn operator-btn" data-type="basic-1">+</button>
+ * 
+ * <!-- Action Button -->
+ * <button class="btn action-btn primary">Submit</button>
+ */
+
+/* Base Button Styles */
+.btn {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    min-width: 2.5rem;
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+    transition: all 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+    background-color: var(--gray-200);
+    border-color: var(--gray-400);
+}
+
+.btn:active:not(:disabled) {
+    background-color: var(--gray-300);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--gray-500);
+    border-color: var(--gray-600);
+    color: white;
+}
+
+/* Number Button Variant */
+.number-btn {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
+}
+
+.number-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    background: var(--gradient-primary-hover);
+}
+
+.number-btn:active:not(:disabled) {
+    transform: translateY(0);
+    background: var(--gradient-primary-active);
+}
+
+.number-btn:disabled {
+    background: var(--gray-200);
+    color: var(--gray-500);
+    box-shadow: none;
+    text-shadow: none;
+}
+
+/* Operator Button Variant */
+.operator-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    background: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    margin: var(--spacing-xs);
+    position: relative;
+    padding: 0;
+    border-width: 2px;
+    border-style: solid;
+}
+
+/* Operator Type Styles */
+.operator-btn[data-type="basic-1"] {
+    color: var(--basic-1-color);
+    border-color: var(--basic-1-color);
+}
+
+.operator-btn[data-type="basic-2"] {
+    color: var(--basic-2-color);
+    border-color: var(--basic-2-color);
+}
+
+.operator-btn[data-type="advanced"] {
+    color: var(--advanced-color);
+    border-color: var(--advanced-color);
+}
+
+.operator-btn[data-type="function"] {
+    color: var(--function-color);
+    border-color: var(--function-color);
+    font-size: 1rem;
+}
+
+.operator-btn[data-type="grouping"] {
+    color: var(--grouping-color);
+    border-color: var(--grouping-color);
+}
+
+/* Operator Hover Effects */
+.operator-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.operator-btn[data-type="basic-1"]:hover:not(:disabled) { background: rgba(52, 152, 219, 0.1); }
+.operator-btn[data-type="basic-2"]:hover:not(:disabled) { background: rgba(46, 204, 113, 0.1); }
+.operator-btn[data-type="advanced"]:hover:not(:disabled) { background: rgba(230, 126, 34, 0.1); }
+.operator-btn[data-type="function"]:hover:not(:disabled) { background: rgba(155, 89, 182, 0.1); }
+.operator-btn[data-type="grouping"]:hover:not(:disabled) { background: rgba(149, 165, 166, 0.1); }
+
+/* Action Button Variant */
+.action-btn {
+    min-width: 120px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn.primary {
+    background: var(--gradient-secondary);
+    box-shadow: 0 2px 4px rgba(46, 204, 113, 0.2);
+}
+
+.action-btn:not(.primary) {
+    background: var(--gradient-gray);
+    box-shadow: 0 2px 4px rgba(149, 165, 166, 0.2);
+}
+
+/* Button Tooltips */
+.operator-btn::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: rgba(33, 33, 33, 0.95);
+    backdrop-filter: blur(4px);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: pre-line;
+    text-align: left;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 2px 4px rgba(0, 0, 0, 0.06);
+    width: max-content;
+    max-width: 200px;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: var(--z-index-tooltip);
+    pointer-events: none;
+}
+
+.operator-btn::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    border: 6px solid transparent;
+    border-top-color: rgba(33, 33, 33, 0.95);
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.operator-btn:hover::before,
+.operator-btn:hover::after {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Hard Mode Badge */
+.hard-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    margin-left: var(--spacing-sm);
+    font-weight: 500;
+}
+
+.hard-mode-badge i {
+    font-size: 0.8em;
+}
+
+/* Responsive Design */
+@media (max-width: var(--breakpoint-sm)) {
+    .number-btn {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.1rem;
+    }
+
+    .operator-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 1rem;
+    }
+
+    .action-btn {
+        min-width: 100px;
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 0.9rem;
+    }
+} 

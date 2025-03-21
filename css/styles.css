@@ -1,0 +1,107 @@
+/**
+ * Main CSS File
+ * This file imports all component styles and provides the main structure for the application.
+ */
+
+/* Import Variables */
+@import 'variables.css';
+
+/* Import Base Styles */
+@import 'base.css';
+
+/* Import Component Styles */
+@import 'components/calendar.css';
+@import 'components/modal.css';
+@import 'components/buttons.css';
+@import 'components/header.css';
+@import 'components/footer.css';
+@import 'components/game.css';
+@import 'components/statistics.css';
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: var(--gray-900);
+        --text-color: var(--gray-100);
+        --border-color: var(--gray-700);
+        --hover-color: var(--gray-800);
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+
+    .number-btn,
+    .operator-btn,
+    .action-btn {
+        background-color: var(--gray-800);
+        color: var(--text-color);
+    }
+
+    .number-btn:hover,
+    .operator-btn:hover,
+    .action-btn:hover {
+        background-color: var(--gray-700);
+    }
+
+    .modal-content {
+        background-color: var(--gray-900);
+        color: var(--text-color);
+    }
+
+    .calendar-container {
+        background-color: var(--gray-900);
+    }
+
+    .calendar-day {
+        color: var(--text-color);
+    }
+
+    .calendar-day:hover {
+        background-color: var(--gray-800);
+    }
+
+    .site-header {
+        background-color: var(--gray-900);
+    }
+
+    .site-footer {
+        background-color: var(--gray-900);
+    }
+
+    .game-container {
+        background-color: var(--gray-900);
+    }
+
+    .stats-panel {
+        background-color: var(--gray-900);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+
+    .number-btn,
+    .operator-btn,
+    .action-btn {
+        display: none;
+    }
+
+    .modal-content {
+        display: none;
+    }
+} 

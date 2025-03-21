@@ -1,0 +1,57 @@
+/**
+ * Footer Component
+ * @component
+ * @example
+ * <footer class="site-footer">
+ *   <div class="footer-content">
+ *     <p>Footer content goes here...</p>
+ *   </div>
+ *   <div class="footer-bottom">
+ *     <p>&copy; 2024 All rights reserved.</p>
+ *   </div>
+ * </footer>
+ */
+
+/* Base Footer Component */
+.site-footer {
+    background-color: var(--gray-700);
+    color: white;
+    padding: var(--spacing-lg) 0;
+    margin-top: var(--spacing-2xl);
+}
+
+.footer-content {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.footer-content p {
+    color: var(--gray-300);
+    font-size: 0.95rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--gray-600);
+}
+
+.footer-bottom p {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: var(--breakpoint-sm)) {
+    .site-footer {
+        padding: var(--spacing-md) 0;
+    }
+
+    .footer-content p {
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom p {
+        font-size: 0.85rem;
+    }
+} 

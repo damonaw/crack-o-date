@@ -1,0 +1,106 @@
+/**
+ * CSS Variables
+ * This file contains all CSS custom properties used throughout the application.
+ * These variables define the design system's colors, spacing, typography, and more.
+ */
+
+:root {
+    /* Colors */
+    --primary-color: #3498db;
+    --primary-color-rgb: 52, 152, 219;
+    --primary-color-dark: #2980b9;
+    --primary-color-darker: #2472a4;
+    --primary-color-darkest: #1f618d;
+    
+    --secondary-color: #2ecc71;
+    --secondary-color-rgb: 46, 204, 113;
+    --secondary-color-dark: #27ae60;
+    
+    --text-color: var(--gray-700);
+    --text-color-muted: var(--gray-500);
+    --background-color: #fff;
+    --background-color-alt: var(--gray-50);
+    --background-color-hover: var(--gray-100);
+    
+    /* Gray Scale */
+    --gray-50: #f8f9fa;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #95a5a6;
+    --gray-600: #7f8c8d;
+    --gray-700: #2c3e50;
+    --gray-800: #34495e;
+    --gray-900: #2c3e50;
+    
+    /* Status Colors */
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --error-color: #e74c3c;
+    --error-color-dark: #c0392b;
+    
+    /* Operator Colors */
+    --basic-1-color: #3498db;
+    --basic-2-color: #2ecc71;
+    --advanced-color: #e67e22;
+    --function-color: #9b59b6;
+    --grouping-color: #95a5a6;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    --gradient-primary-hover: linear-gradient(135deg, var(--primary-color-dark), var(--primary-color-darker));
+    --gradient-primary-active: linear-gradient(135deg, var(--primary-color-darker), var(--primary-color-darkest));
+    --gradient-secondary: linear-gradient(135deg, var(--secondary-color), var(--secondary-color-dark));
+    --gradient-gray: linear-gradient(135deg, var(--gray-500), var(--gray-600));
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 4px 8px rgba(0, 0, 0, 0.2);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 0.75rem;
+    --spacing-lg: 1rem;
+    --spacing-xl: 1.5rem;
+    --spacing-2xl: 2rem;
+    
+    /* Border Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-full: 50%;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Z-index Layers */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1000;
+    --z-index-fixed: 2000;
+    --z-index-modal-backdrop: 2000;
+    --z-index-modal: 2001;
+    --z-index-popover: 3000;
+    --z-index-tooltip: 3000;
+    
+    /* Breakpoints */
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.25rem;
+    --font-size-xl: 1.5rem;
+    --font-size-2xl: 1.75rem;
+    --font-size-3xl: 2rem;
+} 
