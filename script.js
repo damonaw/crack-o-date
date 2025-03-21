@@ -3,28 +3,41 @@ document.addEventListener('DOMContentLoaded', () => {
     let isLeftSide = true;
     let currentNumberIndex = 0;
     
-    // Get date components
+    // Initialize date data
     const today = new Date();
-    const month = today.getMonth() + 1;
-    const day = today.getDate();
-    const year = today.getFullYear();
+    const dateNumbers = getDateNumbers(today);
     
-    // Get date numbers without leading zeros
-    const dateNumbers = [
-        ...String(month).split('').map(Number),
-        ...String(day).split('').map(Number),
-        ...String(year).split('').map(Number)
-    ];
+    // Display formatted date
+    document.getElementById('current-date').textContent = formatDate(today);
     
-    // Display date
-    document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
+    // Initialize game UI
+    initializeUI();
+    setupEventListeners();
+    updateGameState();
     
-    // UI helpers
+    // === Date Handling Functions ===
+    function getDateNumbers(date) {
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const year = date.getFullYear();
+        
+        return [
+            ...String(month).split('').map(Number),
+            ...String(day).split('').map(Number),
+            ...String(year).split('').map(Number)
+        ];
+    }
+    
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+    
+    // === UI Helper Functions ===
     function createButton(text, type) {
         const button = document.createElement('button');
         button.textContent = text;
@@ -36,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return document.getElementById(isLeftSide ? 'left-side' : 'right-side');
     }
     
+    // === Expression Handling Functions ===
     function getExpressionFromSide(side) {
         return Array.from(side.querySelectorAll('button'))
             .map(btn => btn.textContent)
@@ -43,20 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\^/g, '**');
     }
     
-    // Expression evaluation
     function safeEval(expression) {
         if (!expression) return '';
         try {
-            const cleaned = expression
-                .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
-                .replace(/(\d+)\s*\(/g, '$1*(')
-                .replace(/\)\s*(\d+)/g, ')*$1')
-                .replace(/-\s*\(/g, '-1*(');
+            const cleaned = cleanExpression(expression);
             return Function(`'use strict'; return (${cleaned})`)();
         } catch (error) {
             console.error('Expression evaluation error:', error, expression);
             return 'Error';
         }
+    }
+    
+    function cleanExpression(expression) {
+        return expression
+            .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
+            .replace(/(\d+)\s*\(/g, '$1*(')
+            .replace(/\)\s*(\d+)/g, ')*$1')
+            .replace(/-\s*\(/g, '-1*(');
     }
     
     function formatExpression(expression) {
@@ -71,10 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/(\d+)<sup>(\d+)/g, '$1<sup>$2</sup>');
     }
     
-    // UI updates
+    // === UI Update Functions ===
     function updateCurrentValues() {
-        const leftExpression = getExpressionFromSide(document.getElementById('left-side'));
-        const rightExpression = getExpressionFromSide(document.getElementById('right-side'));
+        const leftSide = document.getElementById('left-side');
+        const rightSide = document.getElementById('right-side');
+        const leftExpression = getExpressionFromSide(leftSide);
+        const rightExpression = getExpressionFromSide(rightSide);
         
         document.getElementById('left-value').textContent = safeEval(leftExpression) || '?';
         document.getElementById('right-value').textContent = safeEval(rightExpression) || '?';
@@ -85,8 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const leftValue = safeEval(leftExpression);
         const rightValue = safeEval(rightExpression);
         const equalsSign = document.getElementById('equals-sign');
-        equalsSign.textContent = (leftExpression && rightExpression && leftValue !== 'Error' && 
-            rightValue !== 'Error' && leftValue === rightValue) ? '=' : '≠';
+        
+        const isValid = leftExpression && rightExpression && 
+                       leftValue !== 'Error' && rightValue !== 'Error';
+        equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
     }
     
     function updateActiveSide() {
@@ -94,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('right-side').classList.toggle('active', !isLeftSide);
     }
     
+    // === Message Handling ===
     function showMessage(message, type = 'error') {
         const messageElement = document.getElementById('error-message');
         messageElement.textContent = message;
@@ -106,25 +128,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('error-message').style.display = 'none';
     }
     
-    // Game logic
+    // === Game Logic Functions ===
     function calculatePoints(expression) {
-        return expression.split('').reduce((points, char) => {
-            if (char === '+' || char === '-') return points + 1;
-            if (char === '*' || char === '/' || char === '%') return points + 2;
-            if (char === '^') return points + 3;
-            return points;
-        }, 0);
+        const pointValues = {
+            '+': 1, '-': 1,
+            '*': 2, '/': 2, '%': 2,
+            '^': 3
+        };
+        
+        return expression.split('').reduce((points, char) => 
+            points + (pointValues[char] || 0), 0);
     }
     
     function addButtonToEquation(sourceButton) {
-        const newButton = createButton(sourceButton.textContent, 
-            sourceButton.classList.contains('number') ? 'number' : 'operator');
+        const buttonType = sourceButton.classList.contains('number') ? 'number' : 'operator';
+        const newButton = createButton(sourceButton.textContent, buttonType);
         
         newButton.addEventListener('click', () => {
             const currentSide = getActiveSide();
             if (currentSide.lastElementChild === newButton) {
                 newButton.remove();
-                if (sourceButton.classList.contains('number')) {
+                if (buttonType === 'number') {
                     sourceButton.disabled = false;
                     sourceButton.classList.remove('disabled');
                     currentNumberIndex--;
@@ -137,63 +161,90 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCurrentValues();
     }
     
-    // Initialize UI
-    const dateButtonsContainer = document.getElementById('date-buttons');
-    let currentIndex = 0;
+    // === Initialization Functions ===
+    function initializeUI() {
+        initializeDateButtons();
+        initializeOperatorButtons();
+    }
     
-    // Add month digits
-    String(month).split('').forEach(digit => {
-        dateButtonsContainer.appendChild(createButton(digit, 'number'));
-        currentIndex++;
-    });
-    dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
+    function initializeDateButtons() {
+        const dateButtonsContainer = document.getElementById('date-buttons');
+        const [month, day, year] = [today.getMonth() + 1, today.getDate(), today.getFullYear()];
+        
+        // Add month digits
+        addNumberButtons(String(month), dateButtonsContainer);
+        dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
+        
+        // Add day digits
+        addNumberButtons(String(day), dateButtonsContainer);
+        dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
+        
+        // Add year digits
+        addNumberButtons(String(year), dateButtonsContainer);
+    }
     
-    // Add day digits
-    String(day).split('').forEach(digit => {
-        dateButtonsContainer.appendChild(createButton(digit, 'number'));
-        currentIndex++;
-    });
-    dateButtonsContainer.appendChild(document.createElement('span')).textContent = '/';
-    
-    // Add year digits
-    String(year).split('').forEach(digit => {
-        dateButtonsContainer.appendChild(createButton(digit, 'number'));
-        currentIndex++;
-    });
-    
-    ['+', '-', '*', '/', '%', '(', ')', '^'].forEach(op => 
-        document.getElementById('operator-buttons').appendChild(createButton(op, 'operator'))
-    );
-    
-    // Event listeners
-    ['left-side', 'right-side'].forEach(sideId => {
-        document.getElementById(sideId).addEventListener('click', e => {
-            if (e.target === e.currentTarget) {
-                isLeftSide = sideId === 'left-side';
-                updateActiveSide();
-            }
+    function addNumberButtons(numberString, container) {
+        numberString.split('').forEach(digit => {
+            container.appendChild(createButton(digit, 'number'));
         });
-    });
+    }
     
-    document.querySelectorAll('#date-buttons .number').forEach(button => {
-        button.addEventListener('click', function() {
-            if (parseInt(this.textContent) === dateNumbers[currentNumberIndex]) {
-                hideMessage();
-                this.disabled = true;
-                this.classList.add('disabled');
-                currentNumberIndex++;
-                addButtonToEquation(this);
-            } else {
-                showMessage('Please use numbers in the order they appear in the date.');
-            }
+    function initializeOperatorButtons() {
+        const operators = ['+', '-', '*', '/', '%', '(', ')', '^'];
+        const container = document.getElementById('operator-buttons');
+        
+        operators.forEach(op => 
+            container.appendChild(createButton(op, 'operator'))
+        );
+    }
+    
+    // === Event Listeners Setup ===
+    function setupEventListeners() {
+        setupSideClickListeners();
+        setupNumberButtonListeners();
+        setupOperatorButtonListeners();
+        setupActionButtonListeners();
+    }
+    
+    function setupSideClickListeners() {
+        ['left-side', 'right-side'].forEach(sideId => {
+            document.getElementById(sideId).addEventListener('click', e => {
+                if (e.target === e.currentTarget) {
+                    isLeftSide = sideId === 'left-side';
+                    updateActiveSide();
+                }
+            });
         });
-    });
+    }
     
-    document.querySelectorAll('#operator-buttons .operator').forEach(button => 
-        button.addEventListener('click', () => addButtonToEquation(button))
-    );
+    function setupNumberButtonListeners() {
+        document.querySelectorAll('#date-buttons .number').forEach(button => {
+            button.addEventListener('click', function() {
+                if (parseInt(this.textContent) === dateNumbers[currentNumberIndex]) {
+                    hideMessage();
+                    this.disabled = true;
+                    this.classList.add('disabled');
+                    currentNumberIndex++;
+                    addButtonToEquation(this);
+                } else {
+                    showMessage('Please use numbers in the order they appear in the date.');
+                }
+            });
+        });
+    }
     
-    document.getElementById('clear-button').addEventListener('click', () => {
+    function setupOperatorButtonListeners() {
+        document.querySelectorAll('#operator-buttons .operator').forEach(button => 
+            button.addEventListener('click', () => addButtonToEquation(button))
+        );
+    }
+    
+    function setupActionButtonListeners() {
+        document.getElementById('clear-button').addEventListener('click', handleClear);
+        document.getElementById('check-button').addEventListener('click', handleCheck);
+    }
+    
+    function handleClear() {
         document.querySelectorAll('.equation-side').forEach(side => side.innerHTML = '');
         document.querySelectorAll('#date-buttons .number').forEach(button => {
             button.disabled = false;
@@ -201,33 +252,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         currentNumberIndex = 0;
         isLeftSide = true;
-        updateActiveSide();
-        updateCurrentValues();
-        hideMessage();
-    });
+        updateGameState();
+    }
     
-    document.getElementById('check-button').addEventListener('click', () => {
-        const leftExpression = getExpressionFromSide(document.getElementById('left-side'));
-        const rightExpression = getExpressionFromSide(document.getElementById('right-side'));
+    function handleCheck() {
+        const leftSide = document.getElementById('left-side');
+        const rightSide = document.getElementById('right-side');
+        const leftExpression = getExpressionFromSide(leftSide);
+        const rightExpression = getExpressionFromSide(rightSide);
+        
+        if (!validateEquation(leftExpression, rightExpression)) {
+            return;
+        }
+        
         const leftValue = safeEval(leftExpression);
         const rightValue = safeEval(rightExpression);
         
-        const usedNumbers = Array.from(document.querySelectorAll('.equation-side button'))
-            .map(btn => btn.textContent)
-            .filter(val => /^\d+$/.test(val))
-            .join('');
-        
-        const allDateNumbers = dateNumbers.join('');
-        const allNumbersUsed = usedNumbers.length >= allDateNumbers.length;
-        
-        if (!leftExpression || !rightExpression) {
-            showMessage('Please add numbers and operators to both sides of the equation.');
-        } else if (leftValue === 'Error' || rightValue === 'Error') {
-            showMessage('Invalid expression. Please check your equation.');
-        } else if (!allNumbersUsed) {
-            showMessage('You must use all numbers from the date.');
-        } else if (leftValue === rightValue) {
-            hideMessage();
+        if (leftValue === rightValue) {
             const points = calculatePoints(leftExpression) + calculatePoints(rightExpression);
             showMessage(
                 `Correct! ${formatExpression(leftExpression.replace(/\*\*/g, '^'))} = ${formatExpression(rightExpression.replace(/\*\*/g, '^'))} (Points: ${points})`,
@@ -236,10 +277,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showMessage('Incorrect. The left side does not equal the right side.');
         }
-    });
+    }
     
-    // Initialize game state
-    updateActiveSide();
-    updateCurrentValues();
-    hideMessage();
+    function validateEquation(leftExpression, rightExpression) {
+        if (!leftExpression || !rightExpression) {
+            showMessage('Please add numbers and operators to both sides of the equation.');
+            return false;
+        }
+        
+        const usedNumbers = Array.from(document.querySelectorAll('.equation-side button'))
+            .map(btn => btn.textContent)
+            .filter(val => /^\d+$/.test(val))
+            .join('');
+        
+        if (usedNumbers.length < dateNumbers.length) {
+            showMessage('You must use all numbers from the date.');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function updateGameState() {
+        updateActiveSide();
+        updateCurrentValues();
+        hideMessage();
+    }
 });

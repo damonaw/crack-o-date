@@ -2,28 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A mathematical puzzle game using today's date">
     <title>crack-o-date</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <main class="container">
         <div class="game-container">
-            <div class="date-display">
-                <span id="current-date"></span>
-            </div>
+            <header class="date-display">
+                <h1 id="current-date"></h1>
+            </header>
 
-            <div id="error-message" class="error-message"></div>
+            <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
 
-            <div id="date-buttons" class="button-container"></div>
-            <div id="operator-buttons" class="button-container"></div>
+            <section id="date-buttons" class="button-container" aria-label="Date numbers"></section>
+            <section id="operator-buttons" class="button-container" aria-label="Mathematical operators"></section>
 
-            <div class="equation-builder">
-                <div class="equation-side" id="left-side"></div>
-                <div id="equals-sign">=</div>
-                <div class="equation-side" id="right-side"></div>
-            </div>
+            <section class="equation-builder" aria-label="Equation builder">
+                <div class="equation-side" id="left-side" role="button" tabindex="0"></div>
+                <div id="equals-sign" aria-label="equals sign">=</div>
+                <div class="equation-side" id="right-side" role="button" tabindex="0"></div>
+            </section>
 
-            <div class="equation-values">
+            <div class="equation-values" aria-live="polite">
                 <span id="left-value">?</span> = <span id="right-value">?</span>
             </div>
 
