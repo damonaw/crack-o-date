@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="A mathematical puzzle game using today's date">
     <title>crack-o-date</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -12,7 +17,7 @@
     <header class="site-header">
         <div class="header-content">
             <h1 class="site-title">crack-o-date</h1>
-            <div class="header-date" id="header-date"></div>
+            <div class="header-date" id="header-date" role="button" tabindex="0"></div>
             <button class="menu-button" aria-label="Menu">
                 <i class="fas fa-bars"></i>
             </button>
@@ -41,24 +46,6 @@
                 <button id="check-button" class="btn action-btn primary">Check</button>
             </div>
         </div>
-
-        <div class="stats-panel">
-            <h2>Statistics</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-value" id="total-solutions">0</span>
-                    <span class="stat-label">Today's Solutions</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="high-score">0</span>
-                    <span class="stat-label">High Score</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="current-streak">0</span>
-                    <span class="stat-label">Day Streak</span>
-                </div>
-            </div>
-        </div>
     </main>
 
     <footer class="site-footer">
@@ -80,6 +67,41 @@
                 <h2 id="modal-title"></h2>
             </div>
             <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div class="modal" id="calendar-modal">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close calendar">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2>Select Date</h2>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prev-month">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="calendar-month"></h3>
+                    <button class="calendar-nav" id="next-month">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-days" id="calendar-days"></div>
+                </div>
+            </div>
         </div>
     </div>
 
