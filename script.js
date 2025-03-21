@@ -1,3 +1,107 @@
+// Game data management
+const gameData = {
+    stats: {
+        totalSolutions: 0,
+        totalPoints: 0,
+        highScore: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        averagePoints: 0,
+        lastPlayedDate: null
+    },
+    solutions: [],
+    
+    load() {
+        const savedStats = JSON.parse(localStorage.getItem('stats') || '{}');
+        const savedSolutions = JSON.parse(localStorage.getItem('solutions') || '[]');
+        
+        this.stats = { ...this.stats, ...savedStats };
+        this.solutions = savedSolutions;
+        
+        this.updateDisplay();
+    },
+    
+    save() {
+        localStorage.setItem('stats', JSON.stringify(this.stats));
+        localStorage.setItem('solutions', JSON.stringify(this.solutions));
+        this.updateDisplay();
+    },
+    
+    updateDisplay() {
+        // Update today's solutions count
+        const todaySolutions = this.getTodaysSolutions();
+        document.getElementById('total-solutions').textContent = todaySolutions.length;
+        
+        // Update high score
+        document.getElementById('high-score').textContent = this.stats.highScore;
+        
+        // Update day streak
+        document.getElementById('current-streak').textContent = this.stats.currentStreak;
+    },
+    
+    addSolution(leftExpression, rightExpression, points) {
+        const today = new Date().toISOString().split('T')[0];
+        const solution = {
+            date: new Date().toISOString(),
+            left: leftExpression,
+            right: rightExpression,
+            points: points,
+            dateNumbers: window.dateNumbers.join('')
+        };
+        
+        this.solutions.push(solution);
+        this.updateStats(points, today);
+        this.save();
+    },
+    
+    updateStats(points, today) {
+        // Update high score if current points are higher
+        if (points > this.stats.highScore) {
+            this.stats.highScore = points;
+        }
+        
+        // Update streak based on last played date
+        if (this.stats.lastPlayedDate) {
+            const lastPlayed = new Date(this.stats.lastPlayedDate);
+            const todayDate = new Date(today);
+            const diffTime = Math.abs(todayDate - lastPlayed);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+                // Consecutive day
+                this.stats.currentStreak++;
+                if (this.stats.currentStreak > this.stats.bestStreak) {
+                    this.stats.bestStreak = this.stats.currentStreak;
+                }
+            } else if (diffDays > 1) {
+                // Streak broken
+                this.stats.currentStreak = 1;
+            }
+        } else {
+            // First time playing
+            this.stats.currentStreak = 1;
+            this.stats.bestStreak = 1;
+        }
+        
+        this.stats.lastPlayedDate = today;
+        this.stats.totalPoints += points;
+        this.stats.averagePoints = this.stats.totalPoints / this.solutions.length;
+    },
+    
+    resetStreak() {
+        this.stats.currentStreak = 0;
+        this.stats.lastPlayedDate = null;
+        this.save();
+    },
+    
+    getTodaysSolutions() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.solutions.filter(solution => 
+            solution.date.startsWith(today)
+        );
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Game state
     let isLeftSide = true;
@@ -5,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize date data
     const today = new Date();
-    const dateNumbers = getDateNumbers(today);
+    window.dateNumbers = getDateNumbers(today);
     
     // Display formatted date
     document.getElementById('current-date').textContent = formatDate(today);
@@ -130,14 +234,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // === Message Handling ===
     function showMessage(message, type = 'error') {
         const messageElement = document.getElementById('error-message');
+        
+        // Clear any existing timeouts
+        if (messageElement.timeoutId) {
+            clearTimeout(messageElement.timeoutId);
+        }
+        
+        // Set the message content and type
         messageElement.textContent = message;
         messageElement.className = `error-message ${type}`;
-        messageElement.style.display = 'block';
-        setTimeout(() => messageElement.style.display = 'none', 5000);
+        
+        // Show the message with a slight delay to ensure the display:none is cleared
+        requestAnimationFrame(() => {
+            messageElement.style.display = 'block';
+        });
+        
+        // Set up auto-hide after 5 seconds
+        messageElement.timeoutId = setTimeout(() => {
+            messageElement.style.display = 'none';
+        }, 5000);
     }
     
     function hideMessage() {
-        document.getElementById('error-message').style.display = 'none';
+        const messageElement = document.getElementById('error-message');
+        if (messageElement.timeoutId) {
+            clearTimeout(messageElement.timeoutId);
+        }
+        messageElement.style.display = 'none';
     }
     
     // === Game Logic Functions ===
@@ -218,6 +341,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeUI() {
         initializeDateButtons();
         initializeOperatorButtons();
+        initializeDataManagement();
+        setupKeyboardControls();
     }
     
     function initializeDateButtons() {
@@ -340,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNumberButtonListeners();
         setupOperatorButtonListeners();
         setupActionButtonListeners();
+        setupKeyboardControls();
     }
     
     function setupSideClickListeners() {
@@ -356,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupNumberButtonListeners() {
         document.querySelectorAll('#date-buttons .number').forEach(button => {
             button.addEventListener('click', function() {
-                if (parseInt(this.textContent) === dateNumbers[currentNumberIndex]) {
+                if (parseInt(this.textContent) === window.dateNumbers[currentNumberIndex]) {
                     hideMessage();
                     this.disabled = true;
                     this.classList.add('disabled');
@@ -398,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const rightExpression = getExpressionFromSide(rightSide);
         
         if (!validateEquation(leftExpression, rightExpression)) {
+            gameData.resetStreak();
             return;
         }
         
@@ -410,8 +537,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 `Correct! ${formatExpression(leftExpression.replace(/\*\*/g, '^'))} = ${formatExpression(rightExpression.replace(/\*\*/g, '^'))} (Points: ${points})`,
                 'success'
             );
+            gameData.addSolution(leftExpression, rightExpression, points);
         } else {
             showMessage('Incorrect. The left side does not equal the right side.');
+            gameData.resetStreak();
         }
     }
     
@@ -426,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(val => /^\d+$/.test(val))
             .join('');
         
-        if (usedNumbers.length < dateNumbers.length) {
+        if (usedNumbers.length < window.dateNumbers.length) {
             showMessage('You must use all numbers from the date.');
             return false;
         }
@@ -447,5 +576,64 @@ document.addEventListener('DOMContentLoaded', () => {
         let result = 1;
         for (let i = 2; i <= n; i++) result *= i;
         return result;
+    }
+
+    // Add keyboard support
+    function setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            // Number keys (0-9)
+            if (/^\d$/.test(e.key)) {
+                const numberButtons = document.querySelectorAll('#date-buttons .number');
+                numberButtons.forEach(btn => {
+                    if (btn.textContent === e.key && !btn.disabled) {
+                        btn.click();
+                    }
+                });
+            }
+            
+            // Operator keys
+            const operatorMap = {
+                '+': '+', '-': '-', '*': '*', '/': '/',
+                '(': '(', ')': ')', '^': '^',
+                '%': '%'
+            };
+            
+            if (operatorMap[e.key]) {
+                const operatorButtons = document.querySelectorAll('#operator-buttons .operator');
+                operatorButtons.forEach(btn => {
+                    if (btn.textContent === operatorMap[e.key]) {
+                        btn.click();
+                    }
+                });
+            }
+            
+            // Special keys
+            if (e.key === 'Enter') {
+                document.getElementById('check-button').click();
+            }
+            if (e.key === 'Escape') {
+                document.getElementById('clear-button').click();
+            }
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                isLeftSide = !isLeftSide;
+                updateActiveSide();
+            }
+        });
+    }
+
+    // Initialize data management
+    function initializeDataManagement() {
+        gameData.load();
+        
+        // Check if it's a new day
+        const lastSolution = gameData.solutions[gameData.solutions.length - 1];
+        if (lastSolution) {
+            const lastDate = new Date(lastSolution.date).toISOString().split('T')[0];
+            const today = new Date().toISOString().split('T')[0];
+            if (lastDate !== today) {
+                gameData.resetStreak();
+            }
+        }
     }
 });
