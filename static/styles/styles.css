@@ -245,6 +245,205 @@
 }
 
 /* ==========================================================================
+   History Modal Styles
+   ========================================================================== */
+#history-modal .modal-content {
+    max-width: 900px;
+    width: 95%;
+    padding: 0;
+}
+
+#history-modal .modal-header {
+    padding: var(--spacing-xl);
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    border-top-left-radius: var(--radius-xl);
+    border-top-right-radius: var(--radius-xl);
+}
+
+#history-modal .modal-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+#history-modal .modal-title i {
+    color: var(--primary-color);
+    font-size: 1.2em;
+}
+
+#history-modal .modal-title h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+
+#history-modal .modal-body {
+    padding: var(--spacing-xl);
+    min-height: 500px;
+}
+
+#history-modal .history-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    height: 100%;
+}
+
+#history-modal .history-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+#history-modal .history-solutions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    max-height: 500px;
+}
+
+#history-modal .solutions-header {
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+#history-modal .solutions-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+
+#history-modal .solutions-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    overflow-y: auto;
+    padding-right: var(--spacing-sm);
+}
+
+#history-modal .solutions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#history-modal .solutions-list::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+#history-modal .solutions-list::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+}
+
+#history-modal .solutions-list::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+#history-modal .solution-item {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#history-modal .solution-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+#history-modal .solution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#history-modal .solution-points {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+#history-modal .solution-points i {
+    color: var(--warning-color);
+}
+
+#history-modal .hard-mode-badge {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+#history-modal .hard-mode-badge i {
+    color: var(--gray-600);
+}
+
+#history-modal .solution-equation {
+    font-family: monospace;
+    font-size: 1.1rem;
+    color: var(--gray-700);
+    padding: var(--spacing-md);
+    background: var(--background-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+}
+
+#history-modal .solution-share {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-full);
+    transition: all 0.2s ease;
+}
+
+#history-modal .solution-share:hover {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+#history-modal .modal-footer {
+    padding: var(--spacing-xl);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: center;
+    background: var(--gray-50);
+    border-bottom-left-radius: var(--radius-xl);
+    border-bottom-right-radius: var(--radius-xl);
+}
+
+/* Responsive adjustments for history modal */
+@media (max-width: 768px) {
+    #history-modal .history-container {
+        grid-template-columns: 1fr;
+    }
+    
+    #history-modal .history-solutions {
+        max-height: none;
+    }
+    
+    #history-modal .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* ==========================================================================
    Header Styles
    ========================================================================== */
 .site-header {
