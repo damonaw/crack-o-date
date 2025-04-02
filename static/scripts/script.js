@@ -1,3 +1,5 @@
+import { safeEval } from './mathUtils.js';
+
 // Game data management
 const gameData = {
     stats: {
@@ -268,7 +270,7 @@ const modalContent = {
             <ul>
                 <li><kbd>+</kbd> Addition</li>
                 <li><kbd>-</kbd> Subtraction</li>
-                <li><kbd>*</kbd> Multiplication</li>
+                <li><kbd>x</kbd> Multiplication</li>
                 <li><kbd>/</kbd> Division</li>
                 <li><kbd>%</kbd> Modulo</li>
                 <li><kbd>^</kbd> Exponent</li>
@@ -317,7 +319,6 @@ const modalContent = {
 function formatExpression(expression) {
     if (!expression) return '';
     return expression
-        .replace(/\*/g, '×')
         .replace(/\//g, '÷')
         .replace(/%/g, ' mod ')
         .replace(/\(/g, '<span class="paren">(</span>')
@@ -544,89 +545,6 @@ const gameState = {
         }
     }
 };
-
-// Expression Handling Functions (these can stay global as they're pure functions)
-function safeEval(expression) {
-    if (!expression) return '';
-    try {
-        // Check for incomplete expressions
-        if (/[+\-*/%^]$/.test(expression) ||    // Ends with operator
-            /\([^)]*$/.test(expression) ||      // Unclosed parenthesis
-            /[+\-*/%^]\($/.test(expression) ||  // Operator followed by opening parenthesis
-            /√$/.test(expression) ||            // Ends with square root symbol
-            /√(?!\d|\()/.test(expression) ||    // Square root not followed by number or parenthesis
-            /[|&]$/.test(expression) ||         // Ends with bitwise operator
-            /[|&](?!\d|\()/.test(expression)) { // Bitwise operator not followed by number or parenthesis
-            return '';
-        }
-        const cleaned = cleanExpression(expression);
-        
-        // Include factorial function in evaluation scope
-        const result = Function(`
-            'use strict';
-            function factorial(n) {
-                if (n < 0) return NaN;
-                if (n === 0) return 1;
-                let result = 1;
-                for (let i = 2; i <= n; i++) result *= i;
-                return result;
-            }
-            return (${cleaned});
-        `)();
-        
-        return result;
-    } catch (error) {
-        return '';
-    }
-}
-
-function cleanExpression(expression) {
-    let result = expression
-        // Convert square root symbol to Math.sqrt with proper parentheses
-        .replace(/√(\d+)/g, 'Math.sqrt($1)')
-        .replace(/√\(/g, 'Math.sqrt(')
-        .replace(/Math\.sqrt(?!\()/g, 'Math.sqrt(')
-        
-        // Handle basic arithmetic with parentheses
-        .replace(/(\d+)\s*%\s*(\d+)/g, '($1%$2)')
-        // Handle implicit multiplication between numbers and parentheses
-        .replace(/(\d+)\s*\(/g, '$1*(')
-        .replace(/\)\s*(\d+)/g, ')*$1')
-        .replace(/-\s*\(/g, '-1*(')
-        
-        // Handle multiplication between numbers and functions
-        .replace(/(\d+)(log|abs|sqrt)/g, '$1*$2')
-        
-        // Handle functions with their arguments in parentheses
-        .replace(/log\(([^)]+)\)/g, 'Math.log10($1)')
-        .replace(/abs\(([^)]+)\)/g, 'Math.abs($1)')
-        
-        // Handle factorial after a number or parenthesized expression
-        .replace(/(\d+)!/g, 'factorial($1)')
-        .replace(/\(([^)]+)\)!/g, 'factorial($1)')
-        
-        // Handle functions followed by numbers or opening parenthesis
-        .replace(/(\d+)!(\d+|\()/g, 'factorial($1)*$2')
-        
-        // Handle operators inside parentheses
-        .replace(/\(([^)]*)(\d+)\s*%\s*(\d+)([^)]*)\)/g, '($1($2%$3)$4)')
-        .replace(/\(([^)]*)(\d+)\s*\^\s*(\d+)([^)]*)\)/g, '($1Math.pow($2,$3)$4)')
-        .replace(/\(([^)]*)(\d+)\s*&\s*(\d+)([^)]*)\)/g, '($1($2&$3)$4)')
-        .replace(/\(([^)]*)(\d+)\s*\|\s*(\d+)([^)]*)\)/g, '($1($2|$3)$4)')
-        
-        // Handle standalone operators
-        .replace(/(\d+)\s*&\s*(\d+)/g, '($1&$2)')
-        .replace(/(\d+)\s*\|\s*(\d+)/g, '($1|$2)')
-        .replace(/(\d+)\^(\d+)/g, 'Math.pow($1, $2)')
-        
-        // Handle empty parentheses
-        .replace(/\(\)/g, '0')
-        
-        // Ensure all Math.sqrt calls have proper closing parentheses
-        .replace(/Math\.sqrt\(([^)]+)\)/g, 'Math.sqrt($1)');
-        
-    return result;
-}
 
 // UI Helper Functions
 function getActiveSide() {
@@ -1089,8 +1007,8 @@ function formatSolutionForSharing(solution) {
         return 'Error formatting solution';
     }
     
-    const left = solution.left.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
-    const right = solution.right.replace(/[+\-*/%^√!|&]|abs|log/g, '□');
+    const left = solution.left.replace(/[+\-X/%^√!]|abs|log/g, '□');
+    const right = solution.right.replace(/[+\-X/%^√!]|abs|log/g, '□');
     return `${left} = ${right}\n${solution.points} points${solution.hardMode ? ' (Hard Mode)' : ''}`;
 }
 
@@ -1483,11 +1401,10 @@ document.addEventListener('DOMContentLoaded', () => {
             '+': 1, '-': 1,
             '*': 2, '/': 2, '%': 2,
             '^': 3, '√': 3,
-            '!': 4, '|': 3, '&': 3,
-            'abs': 4, 'log': 4
+            '!': 4, 'abs': 4, 'log': 4
         };
         
-        return expression.split(/([+\-*/%^√!|&]|abs|log)/).reduce((points, char) => 
+        return expression.split(/([+\-*/%^√!]|abs|log)/).reduce((points, char) => 
             points + (pointValues[char] || 0), 0);
     }
     
@@ -1525,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Basic Operators (2 points)
             { 
-                symbol: '*', 
+                symbol: 'x', 
                 type: 'basic-2',
                 tooltip: 'Multiplication\n4 × 5 = 20\nRepeated addition of a number'
             },
@@ -1562,16 +1479,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 symbol: '√', 
                 type: 'function',
                 tooltip: 'Square Root\n√16 = 4\nFinds the number that when squared equals input'
-            },
-            { 
-                symbol: '|', 
-                type: 'advanced',
-                tooltip: 'Bitwise OR\nExample: 5|3 = 7\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n7 = 111  (4 + 2 + 1)\n\nIf either bit is 1, result is 1\nLike combining two sets'
-            },
-            { 
-                symbol: '&', 
-                type: 'advanced',
-                tooltip: 'Bitwise AND\nExample: 5&3 = 1\n\nConverts numbers to binary:\n5 = 101  (4 + 0 + 1)\n3 = 011  (0 + 2 + 1)\n     ↓   ↓   ↓\n1 = 001  (0 + 0 + 1)\n\nOnly if both bits are 1, result is 1\nLike finding what two sets share'
             },
             
             // Function Operators (4 points)
@@ -1722,7 +1629,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Operator keys
             const operatorMap = {
-                '+': '+', '-': '-', '*': '*', '/': '/',
+                '+': '+', '-': '-', 'x': 'x', '/': '/',
                 '(': '(', ')': ')', '^': '^',
                 '%': '%'
             };
