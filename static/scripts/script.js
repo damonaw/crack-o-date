@@ -102,22 +102,23 @@ const modalContent = {
         title: 'How to Play',
         content: `
             <h3>Objective</h3>
-            <p>Create mathematical expressions that equal each other using today's date numbers.</p>
+            <p>Create a valid mathematical expression that equals the target number using the date numbers in order.</p>
             
             <h3>Rules</h3>
             <ul>
-                <li>Use all numbers from today's date in order</li>
-                <li>Create expressions on both sides of the equation</li>
-                <li>Expressions must equal each other</li>
-                <li>More complex operations earn more points</li>
+                <li>Use the numbers from the date in order (left to right)</li>
+                <li>You can use each number only once</li>
+                <li>You can use any combination of operators</li>
+                <li>The expression must be mathematically valid</li>
+                <li>Parentheses are added automatically for functions</li>
             </ul>
             
             <h3>Scoring</h3>
             <ul>
-                <li>Basic operations (+, -): 1 point</li>
-                <li>Advanced operations (×, ÷, mod): 2 points</li>
-                <li>Complex operations (^, √, |, &): 3 points</li>
-                <li>Functions (abs, log, !): 4 points</li>
+                <li>Basic operators (+,-): 1 point</li>
+                <li>Intermediate operators (*,/,%): 2 points</li>
+                <li>Advanced operators (^,√): 3 points</li>
+                <li>Function operators (!,abs,log): 4 points</li>
             </ul>
         `
     },
@@ -252,32 +253,6 @@ const modalContent = {
             
             return calendarHTML;
         }
-    },
-    'keyboard-shortcuts': {
-        title: 'Keyboard Shortcuts',
-        content: `
-            <h3>Navigation</h3>
-            <ul>
-                <li><kbd>Tab</kbd> Switch between left and right sides</li>
-                <li><kbd>Enter</kbd> Check solution</li>
-                <li><kbd>Escape</kbd> Clear equation</li>
-            </ul>
-            
-            <h3>Numbers</h3>
-            <p>Use number keys (0-9) to input date numbers in order</p>
-            
-            <h3>Operators</h3>
-            <ul>
-                <li><kbd>+</kbd> Addition</li>
-                <li><kbd>-</kbd> Subtraction</li>
-                <li><kbd>x</kbd> Multiplication</li>
-                <li><kbd>/</kbd> Division</li>
-                <li><kbd>%</kbd> Modulo</li>
-                <li><kbd>^</kbd> Exponent</li>
-                <li><kbd>(</kbd> Opening parenthesis</li>
-                <li><kbd>)</kbd> Closing parenthesis</li>
-            </ul>
-        `
     },
     'stats': {
         title: 'Statistics',
@@ -815,9 +790,6 @@ function setupMenu() {
         </button>
         <button class="menu-item" data-modal="stats">
             <i class="fas fa-chart-bar"></i> Statistics
-        </button>
-        <button class="menu-item" data-modal="keyboard-shortcuts">
-            <i class="fas fa-keyboard"></i> Keyboard Shortcuts
         </button>
         <button class="menu-item" data-modal="calendar-modal">
             <i class="fas fa-calendar"></i> Play Previous Date
@@ -1499,7 +1471,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.initializeDateButtons();
         initializeOperatorButtons();
         initializeDataManagement();
-        setupKeyboardControls();
         updateOperatorVisibility();
     }
     
@@ -1591,7 +1562,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupNumberButtonListeners();
         setupOperatorButtonListeners();
         setupActionButtonListeners();
-        setupKeyboardControls();
     }
     
     function setupSideClickListeners() {
@@ -1689,50 +1659,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let result = 1;
         for (let i = 2; i <= n; i++) result *= i;
         return result;
-    }
-
-    // Add keyboard support
-    function setupKeyboardControls() {
-        document.addEventListener('keydown', (e) => {
-            // Number keys (0-9)
-            if (/^\d$/.test(e.key)) {
-                const numberButtons = document.querySelectorAll('#date-buttons .number');
-                numberButtons.forEach(btn => {
-                    if (btn.textContent === e.key && !btn.disabled) {
-                        btn.click();
-                    }
-                });
-            }
-            
-            // Operator keys
-            const operatorMap = {
-                '+': '+', '-': '-', 'x': 'x', '/': '/',
-                '(': '(', ')': ')', '^': '^',
-                '%': '%'
-            };
-            
-            if (operatorMap[e.key]) {
-                const operatorButtons = document.querySelectorAll('#operator-buttons .operator');
-                operatorButtons.forEach(btn => {
-                    if (btn.textContent === operatorMap[e.key]) {
-                        btn.click();
-                    }
-                });
-            }
-            
-            // Special keys
-            if (e.key === 'Enter') {
-                document.getElementById('check-button').click();
-            }
-            if (e.key === 'Escape') {
-                document.getElementById('clear-button').click();
-            }
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                gameState.isLeftSide = !gameState.isLeftSide;
-                gameState.updateActiveSide();
-            }
-        });
     }
 
     // Initialize data management
