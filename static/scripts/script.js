@@ -669,6 +669,7 @@ function setupCalendarModal() {
     const calendarModal = document.getElementById('calendar-modal');
     const headerDate = document.getElementById('header-date');
     const closeButton = calendarModal.querySelector('.modal-close');
+    const todayButton = document.getElementById('today-btn');
     
     // Initialize Flatpickr
     const datePicker = flatpickr("#date-picker", {
@@ -723,6 +724,45 @@ function setupCalendarModal() {
     
     closeButton.addEventListener('click', () => {
         calendarModal.classList.remove('active');
+    });
+    
+    // Today button event listener
+    todayButton.addEventListener('click', () => {
+        const today = new Date();
+        datePicker.setDate(today);
+        gameState.selectedDate = today;
+        window.dateNumbers = getDateNumbers(today);
+        document.getElementById('header-date').textContent = formatDate(today);
+        calendarModal.classList.remove('active');
+        
+        // Clear the game board
+        handleClear();
+        
+        // Reinitialize the date buttons
+        const dateButtonsContainer = document.getElementById('date-buttons');
+        dateButtonsContainer.innerHTML = '';
+        gameState.initializeDateButtons();
+        
+        // Reset game state
+        gameState.currentNumberIndex = 0;
+        gameState.isLeftSide = true;
+        
+        // Reattach number button event listeners
+        document.querySelectorAll('#date-buttons .number').forEach(button => {
+            button.addEventListener('click', function() {
+                if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                    hideMessage();
+                    this.disabled = true;
+                    this.classList.add('disabled');
+                    gameState.currentNumberIndex++;
+                    gameState.addButtonToEquation(this);
+                } else {
+                    showMessage('Please use numbers in the order they appear in the date.');
+                }
+            });
+        });
+        
+        updateGameState();
     });
     
     // Close modal when clicking outside
@@ -1328,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const calendarModal = document.getElementById('calendar-modal');
         const headerDate = document.getElementById('header-date');
         const closeButton = calendarModal.querySelector('.modal-close');
+        const todayButton = document.getElementById('today-btn');
         
         // Initialize Flatpickr
         const datePicker = flatpickr("#date-picker", {
@@ -1382,6 +1423,45 @@ document.addEventListener('DOMContentLoaded', () => {
         
         closeButton.addEventListener('click', () => {
             calendarModal.classList.remove('active');
+        });
+        
+        // Today button event listener
+        todayButton.addEventListener('click', () => {
+            const today = new Date();
+            datePicker.setDate(today);
+            gameState.selectedDate = today;
+            window.dateNumbers = getDateNumbers(today);
+            document.getElementById('header-date').textContent = formatDate(today);
+            calendarModal.classList.remove('active');
+            
+            // Clear the game board
+            handleClear();
+            
+            // Reinitialize the date buttons
+            const dateButtonsContainer = document.getElementById('date-buttons');
+            dateButtonsContainer.innerHTML = '';
+            gameState.initializeDateButtons();
+            
+            // Reset game state
+            gameState.currentNumberIndex = 0;
+            gameState.isLeftSide = true;
+            
+            // Reattach number button event listeners
+            document.querySelectorAll('#date-buttons .number').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                        hideMessage();
+                        this.disabled = true;
+                        this.classList.add('disabled');
+                        gameState.currentNumberIndex++;
+                        gameState.addButtonToEquation(this);
+                    } else {
+                        showMessage('Please use numbers in the order they appear in the date.');
+                    }
+                });
+            });
+            
+            updateGameState();
         });
         
         // Close modal when clicking outside

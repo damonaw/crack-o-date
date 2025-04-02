@@ -73,16 +73,38 @@
     </div>
 
     <!-- Calendar Modal -->
-    <div class="modal" id="calendar-modal">
+    <div id="calendar-modal" class="modal" role="dialog" aria-labelledby="calendar-modal-title" aria-modal="true">
+        <div class="modal-overlay" tabindex="-1"></div>
         <div class="modal-content">
-            <button class="modal-close" aria-label="Close calendar">
-                <i class="fas fa-times"></i>
-            </button>
             <div class="modal-header">
-                <h2>Select Date</h2>
+                <div class="modal-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 id="calendar-modal-title">Select a Date</h2>
+                </div>
+                <button class="modal-close" aria-label="Close calendar">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <div id="date-picker"></div>
+                <div class="calendar-container">
+                    <div id="date-picker"></div>
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot today"></span>
+                            <span>Today</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot has-solutions"></span>
+                            <span>Has Solutions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="today-btn">
+                    <i class="fas fa-calendar-day"></i>
+                    Today
+                </button>
             </div>
         </div>
     </div>
