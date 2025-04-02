@@ -10,6 +10,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "dependencies": {
+    "flatpickr": "^4.6.13",
     "mathjs": "^12.3.0"
   },
   "devDependencies": {

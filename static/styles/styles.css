@@ -1692,3 +1692,73 @@ body {
 .hard-mode-badge i {
     font-size: 0.8em;
 }
+
+/* Flatpickr Custom Styles */
+.flatpickr-calendar {
+    background: var(--background-color);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+}
+
+.flatpickr-months {
+    margin-bottom: var(--spacing-md);
+}
+
+.flatpickr-month {
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+}
+
+.flatpickr-current-month {
+    font-size: 1.2rem;
+    color: var(--gray-700);
+}
+
+.flatpickr-weekday {
+    color: var(--gray-600);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.flatpickr-day {
+    color: var(--gray-700);
+    border-radius: var(--radius-sm);
+    margin: 2px;
+}
+
+.flatpickr-day:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+.flatpickr-day.selected {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.flatpickr-day.today {
+    border-color: var(--primary-color);
+}
+
+.flatpickr-day.has-solutions {
+    background: rgba(46, 204, 113, 0.1);
+    color: var(--secondary-color);
+}
+
+.flatpickr-day.has-solutions.selected {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.flatpickr-day.disabled {
+    color: var(--gray-400);
+    cursor: not-allowed;
+}
+
+.flatpickr-day.disabled:hover {
+    background: transparent;
+}

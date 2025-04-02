@@ -665,97 +665,72 @@ function updateGameState() {
 }
 
 // Calendar functions
-function updateCalendar() {
-    const firstDay = new Date(gameState.currentYear, gameState.currentMonth, 1);
-    const lastDay = new Date(gameState.currentYear, gameState.currentMonth + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const firstDayOfWeek = firstDay.getDay();
+function setupCalendarModal() {
+    const calendarModal = document.getElementById('calendar-modal');
+    const headerDate = document.getElementById('header-date');
+    const closeButton = calendarModal.querySelector('.modal-close');
     
-    // Update month display
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-    const calendarMonth = document.getElementById('calendar-month');
-    calendarMonth.textContent = `${monthNames[gameState.currentMonth]} ${gameState.currentYear}`;
-    
-    // Clear existing days
-    const calendarDays = document.getElementById('calendar-days');
-    calendarDays.innerHTML = '';
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfWeek; i++) {
-        calendarDays.appendChild(createCalendarDay(''));
-    }
-    
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(gameState.currentYear, gameState.currentMonth, day);
-        const dateStr = date.toISOString().split('T')[0];
-        const hasSolutions = gameData.solutions.some(s => s.date.startsWith(dateStr));
-        const isToday = day === new Date().getDate() && 
-                      gameState.currentMonth === new Date().getMonth() && 
-                      gameState.currentYear === new Date().getFullYear();
-        const isSelected = day === gameState.selectedDate.getDate() && 
-                         gameState.currentMonth === gameState.selectedDate.getMonth() && 
-                         gameState.currentYear === gameState.selectedDate.getFullYear();
-        
-        const dayElement = createCalendarDay(day, date, hasSolutions, isToday, isSelected);
-        calendarDays.appendChild(dayElement);
-    }
-}
-
-function createCalendarDay(day, date, hasSolutions = false, isToday = false, isSelected = false) {
-    const div = document.createElement('div');
-    div.className = 'calendar-day';
-    if (!day) div.classList.add('empty');
-    if (hasSolutions) div.classList.add('has-solutions');
-    if (isToday) div.classList.add('today');
-    if (isSelected) div.classList.add('selected');
-    
-    if (day) {
-        div.innerHTML = `
-            <span class="day-number">${day}</span>
-            ${hasSolutions ? '<i class="fas fa-check-circle"></i>' : ''}
-        `;
-        
-        div.addEventListener('click', () => {
-            gameState.selectedDate = date;
-            window.dateNumbers = getDateNumbers(gameState.selectedDate);
-            document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
-            const calendarModal = document.getElementById('calendar-modal');
-            calendarModal.classList.remove('active');
-            
-            // Clear the game board
-            handleClear();
-            
-            // Reinitialize the date buttons
-            const dateButtonsContainer = document.getElementById('date-buttons');
-            dateButtonsContainer.innerHTML = '';
-            gameState.initializeDateButtons();
-            
-            // Reset game state
-            gameState.currentNumberIndex = 0;
-            gameState.isLeftSide = true;
-            
-            // Reattach number button event listeners
-            document.querySelectorAll('#date-buttons .number').forEach(button => {
-                button.addEventListener('click', function() {
-                    if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
-                        hideMessage();
-                        this.disabled = true;
-                        this.classList.add('disabled');
-                        gameState.currentNumberIndex++;
-                        gameState.addButtonToEquation(this);
-                    } else {
-                        showMessage('Please use numbers in the order they appear in the date.');
-                    }
+    // Initialize Flatpickr
+    const datePicker = flatpickr("#date-picker", {
+        inline: true,
+        dateFormat: "Y-m-d",
+        defaultDate: gameState.selectedDate,
+        maxDate: "today",
+        onChange: function(selectedDates, dateStr) {
+            if (selectedDates.length > 0) {
+                const selectedDate = selectedDates[0];
+                gameState.selectedDate = selectedDate;
+                window.dateNumbers = getDateNumbers(gameState.selectedDate);
+                document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
+                calendarModal.classList.remove('active');
+                
+                // Clear the game board
+                handleClear();
+                
+                // Reinitialize the date buttons
+                const dateButtonsContainer = document.getElementById('date-buttons');
+                dateButtonsContainer.innerHTML = '';
+                gameState.initializeDateButtons();
+                
+                // Reset game state
+                gameState.currentNumberIndex = 0;
+                gameState.isLeftSide = true;
+                
+                // Reattach number button event listeners
+                document.querySelectorAll('#date-buttons .number').forEach(button => {
+                    button.addEventListener('click', function() {
+                        if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                            hideMessage();
+                            this.disabled = true;
+                            this.classList.add('disabled');
+                            gameState.currentNumberIndex++;
+                            gameState.addButtonToEquation(this);
+                        } else {
+                            showMessage('Please use numbers in the order they appear in the date.');
+                        }
+                    });
                 });
-            });
-            
-            updateGameState();
-        });
-    }
+                
+                updateGameState();
+            }
+        }
+    });
     
-    return div;
+    // Event Listeners
+    headerDate.addEventListener('click', () => {
+        calendarModal.classList.add('active');
+    });
+    
+    closeButton.addEventListener('click', () => {
+        calendarModal.classList.remove('active');
+    });
+    
+    // Close modal when clicking outside
+    calendarModal.addEventListener('click', (e) => {
+        if (e.target === calendarModal) {
+            calendarModal.classList.remove('active');
+        }
+    });
 }
 
 // Handle menu item clicks
@@ -1353,35 +1328,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const calendarModal = document.getElementById('calendar-modal');
         const headerDate = document.getElementById('header-date');
         const closeButton = calendarModal.querySelector('.modal-close');
-        const prevMonthButton = document.getElementById('prev-month');
-        const nextMonthButton = document.getElementById('next-month');
+        
+        // Initialize Flatpickr
+        const datePicker = flatpickr("#date-picker", {
+            inline: true,
+            dateFormat: "Y-m-d",
+            defaultDate: gameState.selectedDate,
+            maxDate: "today",
+            onChange: function(selectedDates, dateStr) {
+                if (selectedDates.length > 0) {
+                    const selectedDate = selectedDates[0];
+                    gameState.selectedDate = selectedDate;
+                    window.dateNumbers = getDateNumbers(gameState.selectedDate);
+                    document.getElementById('header-date').textContent = formatDate(gameState.selectedDate);
+                    calendarModal.classList.remove('active');
+                    
+                    // Clear the game board
+                    handleClear();
+                    
+                    // Reinitialize the date buttons
+                    const dateButtonsContainer = document.getElementById('date-buttons');
+                    dateButtonsContainer.innerHTML = '';
+                    gameState.initializeDateButtons();
+                    
+                    // Reset game state
+                    gameState.currentNumberIndex = 0;
+                    gameState.isLeftSide = true;
+                    
+                    // Reattach number button event listeners
+                    document.querySelectorAll('#date-buttons .number').forEach(button => {
+                        button.addEventListener('click', function() {
+                            if (parseInt(this.textContent) === window.dateNumbers[gameState.currentNumberIndex]) {
+                                hideMessage();
+                                this.disabled = true;
+                                this.classList.add('disabled');
+                                gameState.currentNumberIndex++;
+                                gameState.addButtonToEquation(this);
+                            } else {
+                                showMessage('Please use numbers in the order they appear in the date.');
+                            }
+                        });
+                    });
+                    
+                    updateGameState();
+                }
+            }
+        });
         
         // Event Listeners
         headerDate.addEventListener('click', () => {
             calendarModal.classList.add('active');
-            updateCalendar();
         });
         
         closeButton.addEventListener('click', () => {
             calendarModal.classList.remove('active');
-        });
-        
-        prevMonthButton.addEventListener('click', () => {
-            gameState.currentMonth--;
-            if (gameState.currentMonth < 0) {
-                gameState.currentMonth = 11;
-                gameState.currentYear--;
-            }
-            updateCalendar();
-        });
-        
-        nextMonthButton.addEventListener('click', () => {
-            gameState.currentMonth++;
-            if (gameState.currentMonth > 11) {
-                gameState.currentMonth = 0;
-                gameState.currentYear++;
-            }
-            updateCalendar();
         });
         
         // Close modal when clicking outside
@@ -1390,9 +1390,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 calendarModal.classList.remove('active');
             }
         });
-        
-        // Initial calendar update
-        updateCalendar();
     }
     
     // === Game Logic Functions ===

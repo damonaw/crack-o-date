@@ -12,6 +12,8 @@
     <link rel="manifest" href="static/site.webmanifest">
     <link rel="stylesheet" href="static/styles/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Add Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <header class="site-header">
@@ -80,33 +82,15 @@
                 <h2>Select Date</h2>
             </div>
             <div class="modal-body">
-                <div class="calendar-header">
-                    <button class="calendar-nav" id="prev-month">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <h3 id="calendar-month"></h3>
-                    <button class="calendar-nav" id="next-month">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div class="calendar-grid">
-                    <div class="calendar-weekdays">
-                        <div>Sun</div>
-                        <div>Mon</div>
-                        <div>Tue</div>
-                        <div>Wed</div>
-                        <div>Thu</div>
-                        <div>Fri</div>
-                        <div>Sat</div>
-                    </div>
-                    <div id="calendar-days"></div>
-                </div>
+                <div id="date-picker"></div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.3.0/math.min.js"></script>
+    <!-- Add Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module" src="static/scripts/mathUtils.js"></script>
     <script type="module" src="static/scripts/script.js"></script>
 </body>
