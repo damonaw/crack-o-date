@@ -98,11 +98,11 @@ describe('UI Elements Tests', () => {
   describe('Required Assets', () => {
     test('should have all required favicon and manifest files', () => {
       const head = document.querySelector('head');
-      expect(head.querySelector('link[href="favicon.ico"]')).toBeInTheDocument();
-      expect(head.querySelector('link[href="favicon-32x32.png"]')).toBeInTheDocument();
-      expect(head.querySelector('link[href="favicon-16x16.png"]')).toBeInTheDocument();
-      expect(head.querySelector('link[href="apple-touch-icon.png"]')).toBeInTheDocument();
-      expect(head.querySelector('link[href="site.webmanifest"]')).toBeInTheDocument();
+      expect(head.querySelector('link[href="static/assets/favicon.ico"]')).toBeInTheDocument();
+      expect(head.querySelector('link[href="static/assets/favicon-32x32.png"]')).toBeInTheDocument();
+      expect(head.querySelector('link[href="static/assets/favicon-16x16.png"]')).toBeInTheDocument();
+      expect(head.querySelector('link[href="static/assets/apple-touch-icon.png"]')).toBeInTheDocument();
+      expect(head.querySelector('link[href="static/site.webmanifest"]')).toBeInTheDocument();
     });
   });
 }); 
