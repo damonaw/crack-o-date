@@ -121,4 +121,4 @@ Valid equations might look like:
 - `√16 = 2^2`
 - `5! = 120`
 - `abs(-25) = 5^2`
-- `log(100) = 2^3`
+- `log(100) = 2`
