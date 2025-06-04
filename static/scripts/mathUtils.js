@@ -63,7 +63,7 @@ function cleanExpression(expression) {
         .replace(/(\d+)\^(\d+)/g, 'pow($1, $2)')
         
         // Handle implicit multiplication
-        .replace(/(\d+)\s*\(/g, '$1*(')
+        .replace(/\b(\d+)\s*\(/g, '$1*(')
         .replace(/\)\s*(\d+)/g, ')*$1')
         
         // Handle empty parentheses
