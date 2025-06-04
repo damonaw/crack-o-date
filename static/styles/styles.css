@@ -1784,6 +1784,7 @@ body {
 .solutions-calendar {
     background: var(--background-color);
     position: sticky;
+    top: var(--spacing-xl);
 }
 
 .solutions-content {
