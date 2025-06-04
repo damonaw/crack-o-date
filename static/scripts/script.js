@@ -1486,12 +1486,12 @@ function initializeOperatorButtons() {
         { 
             symbol: 'abs', 
             type: 'function',
-            tooltip: 'Absolute Value\nExample: abs(-5) = 5\n\nParenthesis added automatically\nRemoves the negative sign\nReturns how far a number is from zero'
+            tooltip: 'Absolute Value\nExample: abs(-5) = 5\n\nParentheses added automatically\nRemoves the negative sign\nReturns how far a number is from zero'
         },
         { 
             symbol: 'log', 
             type: 'function',
-            tooltip: 'Base-10 Logarithm\nExample: log(100) = 2\n\nParenthesis added automatically\nAnswers: "10 to what power gives this number?"\n\nlog(1000) = 3 because 10³ = 1000'
+            tooltip: 'Base-10 Logarithm\nExample: log(100) = 2\n\nParentheses added automatically\nAnswers: "10 to what power gives this number?"\n\nlog(1000) = 3 because 10³ = 1000'
         },
         { 
             symbol: '!', 
