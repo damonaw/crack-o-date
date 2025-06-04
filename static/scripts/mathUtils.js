@@ -48,6 +48,8 @@ export function safeEval(expression) {
  */
 function cleanExpression(expression) {
     return expression
+        // Convert multiplication symbol
+        .replace(/x/g, '*')
         // Convert square root symbol to sqrt
         .replace(/√(\d+)/g, 'sqrt($1)')
         .replace(/√\(/g, 'sqrt(')
