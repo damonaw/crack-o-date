@@ -450,8 +450,9 @@ const gameState = {
         const rightValue = safeEval(rightExpression);
         const equalsSign = document.getElementById('equals-sign');
         
-        const isValid = leftExpression && rightExpression && 
-                       leftValue !== 'Error' && rightValue !== 'Error';
+        const isValid = leftExpression && rightExpression &&
+                       leftValue !== 'Error' && rightValue !== 'Error' &&
+                       leftValue !== '' && rightValue !== '';
         equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
     },
     
@@ -577,8 +578,9 @@ function updateEqualsSign(leftExpression, rightExpression) {
     const rightValue = safeEval(rightExpression);
     const equalsSign = document.getElementById('equals-sign');
     
-    const isValid = leftExpression && rightExpression && 
-                   leftValue !== 'Error' && rightValue !== 'Error';
+    const isValid = leftExpression && rightExpression &&
+                   leftValue !== 'Error' && rightValue !== 'Error' &&
+                   leftValue !== '' && rightValue !== '';
     equalsSign.textContent = (isValid && leftValue === rightValue) ? '=' : '≠';
 }
 
