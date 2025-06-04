@@ -1173,8 +1173,8 @@ function formatSolutionForSharing(solution) {
         return 'Error formatting solution';
     }
     
-    const left = solution.left.replace(/[+\-X/%^√!]|abs|log/g, '□');
-    const right = solution.right.replace(/[+\-X/%^√!]|abs|log/g, '□');
+    const left = solution.left.replace(/[+\-x*/%^√!]|abs|log/g, '□');
+    const right = solution.right.replace(/[+\-x*/%^√!]|abs|log/g, '□');
     return `${left} = ${right}\n${solution.points} points${solution.hardMode ? ' (Hard Mode)' : ''}`;
 }
 
@@ -1571,12 +1571,12 @@ function setupActionButtonListeners() {
 function calculatePoints(expression) {
     const pointValues = {
         '+': 1, '-': 1,
-        '*': 2, '/': 2, '%': 2,
+        '*': 2, 'x': 2, '/': 2, '%': 2,
         '^': 3, '√': 3,
         '!': 4, 'abs': 4, 'log': 4
     };
-    
-    return expression.split(/([+\-*/%^√!]|abs|log)/).reduce((points, char) => 
+
+    return expression.split(/([+\-x*/%^√!]|abs|log)/).reduce((points, char) =>
         points + (pointValues[char] || 0), 0);
 }
 
