@@ -122,3 +122,10 @@ Valid equations might look like:
 - `5! = 120`
 - `abs(-25) = 5^2`
 - `log(100) = 2^3`
+## Running Tests
+
+Install dependencies and run:
+
+```sh
+npm test
+```
