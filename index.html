@@ -3,190 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A mathematical puzzle game using today's date">
+    <meta name="description" content="A simple math puzzle using today's date">
     <title>crack-o-date</title>
-    <link rel="icon" type="image/x-icon" href="static/assets/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="static/assets/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="static/assets/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="static/assets/apple-touch-icon.png">
-    <link rel="manifest" href="static/site.webmanifest">
     <link rel="stylesheet" href="static/styles/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Add Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <header class="site-header">
-        <div class="header-content">
-            <h1 class="site-title">crack-o-date</h1>
-            <div class="header-date" id="header-date" role="button" tabindex="0"></div>
-            <button class="menu-button" aria-label="Menu">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
+        <h1 class="site-title">crack-o-date</h1>
+        <div class="header-date" id="header-date"></div>
     </header>
 
     <main class="container">
-        <div class="game-container">
-            <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
+        <div id="error-message" class="error-message" role="alert" aria-live="polite"></div>
 
-            <section id="date-buttons" class="button-container" aria-label="Date numbers"></section>
-            <section id="operator-buttons" class="button-container" aria-label="Mathematical operators"></section>
+        <section id="date-buttons" class="button-container" aria-label="Date numbers"></section>
+        <section id="operator-buttons" class="button-container" aria-label="Operators"></section>
 
-            <section class="equation-builder" aria-label="Equation builder">
-                <div class="equation-side" id="left-side" role="button" tabindex="0"></div>
-                <div id="equals-sign" aria-label="equals sign">=</div>
-                <div class="equation-side" id="right-side" role="button" tabindex="0"></div>
-            </section>
+        <section class="equation-builder" aria-label="Equation builder">
+            <div class="equation-side" id="left-side" tabindex="0"></div>
+            <div id="equals-sign">=</div>
+            <div class="equation-side" id="right-side" tabindex="0"></div>
+        </section>
 
-            <div class="equation-values" aria-live="polite">
-                <span id="left-value">?</span> = <span id="right-value">?</span>
-            </div>
+        <div class="equation-values" aria-live="polite">
+            <span id="left-value">?</span> = <span id="right-value">?</span>
+        </div>
 
-            <div class="controls">
-                <button id="clear-button" class="btn action-btn">Clear</button>
-                <button id="check-button" class="btn action-btn primary">Check</button>
-            </div>
+        <div class="controls">
+            <button id="clear-button">Clear</button>
+            <button id="check-button">Check</button>
         </div>
     </main>
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <p>Made with ❤️ by Damon</p>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="current-year"></span> crack-o-date. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Solutions Modal -->
-    <div id="solutions-modal" class="modal" role="dialog" aria-labelledby="solutions-modal-title" aria-modal="true">
-        <div class="modal-overlay" tabindex="-1"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2 id="solutions-modal-title">Solutions</h2>
-                </div>
-                <button class="modal-close" aria-label="Close solutions">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="solutions-container">
-                    <div class="solutions-calendar">
-                        <div id="solutions-date-picker"></div>
-                    </div>
-                    <div class="solutions-content">
-                        <div class="solutions-header">
-                            <h3><span id="selected-date"></span></h3>
-                            <div class="solutions-actions">
-                                <button class="modal-btn primary" id="play-date-btn">
-                                    <i class="fas fa-play"></i>
-                                    Play This Date
-                                </button>
-                                <button class="modal-btn secondary" id="share-all-btn">
-                                    <i class="fas fa-share-alt"></i>
-                                    Share All
-                                </button>
-                            </div>
-                        </div>
-                        <div class="solutions-list" id="solutions-list">
-                            <!-- Solutions will be populated here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" id="today-btn">
-                    <i class="fas fa-calendar-day"></i>
-                    Today
-                </button>
-                <button class="modal-btn danger" id="reset-all-data">
-                    <i class="fas fa-trash"></i>
-                    Reset All Data
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- How to Play Modal -->
-    <div id="how-to-play-modal" class="modal" role="dialog" aria-labelledby="how-to-play-modal-title" aria-modal="true">
-        <div class="modal-overlay" tabindex="-1"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-question-circle"></i>
-                    <h2 id="how-to-play-modal-title">How to Play</h2>
-                </div>
-                <button class="modal-close" aria-label="Close how to play">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="how-to-play-content">
-                    <!-- Content will be populated here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Modal -->
-    <div id="stats-modal" class="modal" role="dialog" aria-labelledby="stats-modal-title" aria-modal="true">
-        <div class="modal-overlay" tabindex="-1"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-chart-bar"></i>
-                    <h2 id="stats-modal-title">Statistics</h2>
-                </div>
-                <button class="modal-close" aria-label="Close statistics">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="stats-content">
-                    <!-- Content will be populated here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- History Modal -->
-    <div id="history-modal" class="modal" role="dialog" aria-labelledby="history-modal-title" aria-modal="true">
-        <div class="modal-overlay" tabindex="-1"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-history"></i>
-                    <h2 id="history-modal-title">History</h2>
-                </div>
-                <button class="modal-close" aria-label="Close history">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="history-container">
-                    <div class="history-calendar">
-                        <div id="history-date-picker"></div>
-                    </div>
-                    <div class="history-solutions">
-                        <div class="solutions-header">
-                            <h3><span id="history-selected-date"></span></h3>
-                        </div>
-                        <div class="solutions-list" id="history-solutions-list">
-                            <!-- Solutions will be populated here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.3.0/math.min.js"></script>
-    <!-- Add Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module" src="static/scripts/mathUtils.js"></script>
     <script type="module" src="static/scripts/script.js"></script>
 </body>
