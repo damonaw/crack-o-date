@@ -17,5 +17,4 @@ Clone the repository and open `index.html` in your browser.
 
 ```sh
 npm install
-npm test
 ```
