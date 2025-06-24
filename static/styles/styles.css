@@ -62,7 +62,7 @@ body {
 }
 
 .button-container button,
-.equation-side button {
+.equation-side .token {
     padding: 0.5rem 0.75rem;
     border: none;
     background: var(--surface-color);
@@ -73,7 +73,7 @@ body {
 }
 
 .button-container button:hover:not(:disabled),
-.equation-side button:hover {
+.equation-side .token:hover {
     background: var(--accent-color);
     color: #fff;
 }
@@ -142,4 +142,27 @@ body {
 
 .success {
     color: var(--accent-color);
+}
+
+.token {
+    user-select: none;
+    cursor: move;
+}
+
+.fraction {
+    padding: 0;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fraction .line {
+    width: 100%;
+    border-bottom: 1px solid var(--text-color);
+    margin: 2px 0;
+}
+
+.fraction .numerator,
+.fraction .denominator {
+    padding: 0 0.25rem;
 }
