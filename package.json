@@ -6,7 +6,5 @@
   "dependencies": {
     "mathjs": "^12.3.0"
   },
-  "scripts": {
-    "test": "node --test"
-  }
+  "scripts": {}
 }
