@@ -4,7 +4,6 @@
   "description": "A mathematical puzzle game using today's date",
   "type": "module",
   "dependencies": {
-    "jsdom": "^26.1.0",
     "mathjs": "^12.3.0"
   },
   "scripts": {
