@@ -10,6 +10,7 @@ const leftValue = document.getElementById('left-value');
 const rightValue = document.getElementById('right-value');
 const equalsEl = document.getElementById('equals-sign');
 const messageEl = document.getElementById('error-message');
+let themeToggle;
 
 function getDigits(date) {
   const m = date.getMonth() + 1;
@@ -66,6 +67,20 @@ function showMessage(msg, type = 'error') {
   setTimeout(() => {
     messageEl.style.display = 'none';
   }, 3000);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (themeToggle) {
+    themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('theme', next);
 }
 
 function reset() {
@@ -131,6 +146,10 @@ function init() {
   const today = new Date();
   digits = getDigits(today);
   document.getElementById('header-date').textContent = formatDate(today);
+  themeToggle = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  applyTheme(savedTheme);
+  themeToggle.addEventListener('click', toggleTheme);
   setupNumberButtons();
   setupOperatorButtons();
   document.getElementById('clear-button').addEventListener('click', reset);
