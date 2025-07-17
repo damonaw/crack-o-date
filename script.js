@@ -781,6 +781,46 @@ class CrackODate {
         }, 2000);
     }
 
+    showNotification(message) {
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--equation-element-bg);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(66, 153, 225, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Trigger slide-in animation
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
     showError(message) {
         // Create a temporary error notification
         const notification = document.createElement('div');
@@ -789,14 +829,14 @@ class CrackODate {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #e53e3e;
+            background: var(--error-color);
             color: white;
             padding: 20px;
             border-radius: 10px;
             font-size: 1.2em;
             font-weight: bold;
             z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 24px rgba(229, 62, 62, 0.3);
             max-width: 300px;
             text-align: center;
         `;
@@ -805,14 +845,28 @@ class CrackODate {
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
         }, 3000);
     }
 
-    showModal(title, content) {
-        document.getElementById('modalTitle').textContent = title;
+    showModal(icon, title, content) {
+        const modalTitle = document.getElementById('modalTitle');
+        modalTitle.innerHTML = `
+            <div class="modal-icon">${icon}</div>
+            <span>${title}</span>
+        `;
         document.getElementById('modalBody').innerHTML = content;
         document.getElementById('modalOverlay').classList.add('show');
+        
+        // Trigger icon animation
+        setTimeout(() => {
+            const modalIcon = document.querySelector('.modal-icon');
+            if (modalIcon) {
+                modalIcon.querySelector('::before')?.style.setProperty('transform', 'translateX(100%)');
+            }
+        }, 100);
     }
 
     closeModal() {
