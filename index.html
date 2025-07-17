@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crack-O-Date</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1>📅 Crack-O-Date</h1>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+            <div class="menu-dropdown" id="menuDropdown">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Dark Mode</span>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="advancedModeToggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Advanced Mode</span>
+                </label>
+                <hr class="menu-separator">
+                <button class="menu-item" id="scoringBtn">📊 Scoring</button>
+                <button class="menu-item" id="howToPlayBtn">❓ How to Play</button>
+                <button class="menu-item" id="operatorsBtn">🔧 Operators</button>
+            </div>
+        </header>
+
+        <!-- Today's Date Display -->
+        <div class="date-section">
+            <h3>Today's Date:</h3>
+            <div class="date-digits" id="dateDigits">
+                <!-- Date digits will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Math Operators -->
+        <div class="operators-section">
+            <h3>Operators:</h3>
+            <div class="operators" id="operators">
+                <div class="operator" data-op="+" draggable="true">+</div>
+                <div class="operator" data-op="-" draggable="true">-</div>
+                <div class="operator" data-op="*" draggable="true">×</div>
+                <div class="operator" data-op="/" draggable="true">/</div>
+                <div class="operator" data-op="%" draggable="true">mod</div>
+                <div class="operator" data-op="**" draggable="true">pow</div>
+                <div class="operator" data-op="abs" draggable="true">abs</div>
+                <div class="operator" data-op="sqrt" draggable="true">√</div>
+                <div class="operator" data-op="(" draggable="true">(</div>
+                <div class="operator" data-op=")" draggable="true">)</div>
+            </div>
+        </div>
+
+        <!-- Equation Input Area -->
+        <div class="equation-section">
+            <div class="equation-container">
+                <div class="input-area">
+                    <div class="equation-side" id="leftSide" data-side="left">
+                        <div class="drop-zone">Drop numbers and operators here</div>
+                    </div>
+                    <div class="equals-sign">=</div>
+                    <div class="equation-side" id="rightSide" data-side="right">
+                        <div class="drop-zone">Drop numbers and operators here</div>
+                    </div>
+                </div>
+                
+                <!-- Result Display -->
+                <div class="result-display">
+                    <div class="result-value" id="leftResult">0</div>
+                    <div class="result-comparison" id="comparison">≠</div>
+                    <div class="result-value" id="rightResult">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="clearBtn" class="btn btn-secondary" disabled>Clear</button>
+            <button id="submitBtn" class="btn btn-primary" disabled>Submit</button>
+        </div>
+
+        <!-- Score Display -->
+        <div class="score-section">
+            <div class="score">Score: <span id="score">0</span></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Title</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
