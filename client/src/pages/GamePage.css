@@ -1,0 +1,556 @@
+.game-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.game-header {
+  margin-bottom: 40px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.game-header h1 {
+  color: white;
+  font-size: 3rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.username {
+  color: white;
+  font-weight: 500;
+}
+
+.profile-link, .login-link {
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 2px solid white;
+  border-radius: 6px;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.profile-link:hover, .login-link:hover {
+  background: white;
+  color: #667eea;
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: white;
+  color: #667eea;
+}
+
+.header-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-display {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.retroactive-warning {
+  background: rgba(255, 167, 38, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.game-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.puzzle-info {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.puzzle-info h2 {
+  color: #333;
+  margin-top: 0;
+  text-align: center;
+}
+
+.numbers-display {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.number-box {
+  background: #667eea;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  min-width: 40px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.number-box.clickable {
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.number-box.clickable:hover:not(:disabled) {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.number-box.used {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.number-box.used:hover {
+  background: #ccc;
+  transform: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.number-box.next-available {
+  background: #4caf50;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  50% { box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4); }
+  100% { box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+}
+
+.date-delimiter {
+  color: #667eea;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 8px;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  line-height: 1;
+}
+
+.instructions {
+  text-align: center;
+  color: #666;
+  margin-bottom: 0;
+}
+
+.equation-form {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.equation-input {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.equation-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.submit-button, .clear-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.submit-button {
+  background: #667eea;
+  color: white;
+  flex: 1;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.clear-button {
+  background: #f0f0f0;
+  color: #666;
+  flex: 0 0 auto;
+}
+
+.clear-button:hover {
+  background: #e0e0e0;
+}
+
+.result-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.result-panel.valid {
+  border-left: 6px solid #4caf50;
+}
+
+.result-panel.invalid {
+  border-left: 6px solid #f44336;
+}
+
+.success-result h3 {
+  color: #4caf50;
+  margin-top: 0;
+}
+
+.solution-details {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.solution-details p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.score-display {
+  font-weight: 600;
+  color: #4caf50;
+  font-size: 1.1rem;
+}
+
+.error-result h3 {
+  color: #f44336;
+  margin-top: 0;
+}
+
+.error-message {
+  font-weight: 600;
+  color: #f44336;
+  margin-bottom: 10px;
+}
+
+.calculation-values {
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.used-numbers {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.missing-numbers {
+  color: #f57c00;
+  font-weight: 500;
+}
+
+.operators-panel {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.operators-panel h3 {
+  margin-top: 0;
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.operators-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.operator-btn {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 45px;
+}
+
+.operator-btn.basic {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.operator-btn.basic:hover {
+  background: #c8e6c9;
+  transform: translateY(-1px);
+}
+
+.operator-btn.intermediate {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.operator-btn.intermediate:hover {
+  background: #ffe0b2;
+  transform: translateY(-1px);
+}
+
+.operator-btn.advanced {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.operator-btn.advanced:hover {
+  background: #e1bee7;
+  transform: translateY(-1px);
+}
+
+.operator-btn.equals {
+  background: #667eea;
+  color: white;
+  font-size: 1.1rem;
+  min-width: 65px;
+}
+
+.operator-btn.equals:hover:not(:disabled) {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+}
+
+.operator-btn.equals.used {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.operator-btn.equals.used:hover {
+  background: #ccc;
+  transform: none;
+}
+
+.operator-btn.punctuation {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.operator-btn.punctuation:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.operator-btn.space {
+  background: #f0f0f0;
+  color: #999;
+  font-size: 0.9rem;
+  min-width: 65px;
+}
+
+.operator-btn.space:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.operators-guide {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.operators-guide h3 {
+  margin-top: 0;
+  text-align: center;
+  color: #333;
+}
+
+.operators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.operator-group {
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+}
+
+.operator-group.basic-group {
+  background: #e8f5e8;
+  border-color: #2e7d32;
+}
+
+.operator-group.intermediate-group {
+  background: #fff3e0;
+  border-color: #ef6c00;
+}
+
+.operator-group.advanced-group {
+  background: #f3e5f5;
+  border-color: #7b1fa2;
+}
+
+.operator-group h4 {
+  margin: 0 0 15px 0;
+  text-align: center;
+  font-weight: 600;
+}
+
+.operator-group.basic-group h4 {
+  color: #2e7d32;
+}
+
+.operator-group.intermediate-group h4 {
+  color: #ef6c00;
+}
+
+.operator-group.advanced-group h4 {
+  color: #7b1fa2;
+}
+
+.operator-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operator-example {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+}
+
+.operator-example .operator {
+  font-weight: bold;
+  font-size: 1.2rem;
+  min-width: 30px;
+  text-align: center;
+}
+
+.operator-example .example {
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .game-page {
+    padding: 15px;
+  }
+  
+  .game-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .puzzle-info, .equation-form, .result-panel, .operators-guide {
+    padding: 20px;
+  }
+  
+  .numbers-display {
+    gap: 8px;
+  }
+  
+  .number-box {
+    padding: 10px 12px;
+    font-size: 1.3rem;
+  }
+  
+  .operators-grid {
+    grid-template-columns: 1fr;
+  }
+}

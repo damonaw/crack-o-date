@@ -1,0 +1,46 @@
+.math-display {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  text-align: center;
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+}
+
+.math-display .katex-display {
+  margin: 0;
+}
+
+.math-display .katex {
+  font-size: 1.2em;
+}
+
+.math-display.success {
+  background: #e8f5e8;
+  border-color: #4caf50;
+}
+
+.math-display.error {
+  background: #ffebee;
+  border-color: #f44336;
+}
+
+.math-display.small {
+  padding: 8px;
+  font-size: 0.9em;
+}
+
+.math-display.large {
+  padding: 20px;
+  font-size: 1.1em;
+}
+
+.katex-error {
+  color: #cc0000;
+  font-family: monospace;
+  font-size: 0.9em;
+  background: #ffe6e6;
+  padding: 5px;
+  border-radius: 4px;
+}
