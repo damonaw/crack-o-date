@@ -239,12 +239,15 @@ export class MathParser {
     
     const num = parseFloat(numStr);
     
-    // Check if this is a date number being used
-    if (numStr.length === 1 && !hasDecimal) {
-      const digit = parseInt(numStr, 10);
-      const expectedIndex = this.usedNumbers.length;
-      if (expectedIndex < this.dateNumbers.length && this.dateNumbers[expectedIndex] === digit) {
-        this.usedNumbers.push(digit);
+    // Check if this contains date numbers (split multi-digit numbers into individual digits)
+    if (!hasDecimal && /^\d+$/.test(numStr)) {
+      // Split the number string into individual digits
+      for (const digitChar of numStr) {
+        const digit = parseInt(digitChar, 10);
+        const expectedIndex = this.usedNumbers.length;
+        if (expectedIndex < this.dateNumbers.length && this.dateNumbers[expectedIndex] === digit) {
+          this.usedNumbers.push(digit);
+        }
       }
     }
     

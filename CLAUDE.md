@@ -61,19 +61,22 @@ npm test           # Run tests
 4. **Scoring**: Points awarded based on operator complexity (parentheses don't affect score)
 5. **Historical Play**: Past dates can be solved but are marked as retroactive and don't count toward averages
 
-## Database Schema (Planned)
+## Database Schema (Implemented)
 
-The application will use SQLite with:
-- `users` table for authentication
-- `solutions` table linking users to their equation solutions
-- `dates` table for tracking puzzle dates and metadata
+The application uses SQLite with the following tables:
+- `users`: User accounts with username, email, and password hash
+- `puzzle_dates`: Date information including date strings and parsed digit arrays
+- `solutions`: User equation solutions with scores and validation results
+- `user_sessions`: JWT session token management for authentication
 
 ## Authentication System
 
-User authentication is planned but not yet implemented. The current structure includes:
-- Login/signup UI components
-- JWT token handling preparation in server dependencies
-- User session management placeholders
+User authentication is implemented with:
+- Bcrypt password hashing for secure storage
+- JWT tokens for session management
+- Express rate limiting for API protection
+- CORS configuration for cross-origin requests
+- Session token expiration and cleanup
 
 ## Mathematical Notation
 

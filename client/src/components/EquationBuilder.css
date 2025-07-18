@@ -1,0 +1,374 @@
+/* Import shared variables from GamePage */
+@import url('../pages/GamePage.css');
+
+.equation-builder {
+  width: 100%;
+}
+
+.equation-display {
+  min-height: 80px;
+  border: var(--border-width) solid var(--gray-medium);
+  border-radius: var(--border-radius-button);
+  padding: 20px;
+  background: #fafafa;
+  transition: var(--transition-border);
+  margin-bottom: 15px;
+}
+
+.equation-display:focus-within {
+  border-color: var(--primary-blue);
+  box-shadow: var(--focus-shadow);
+}
+
+.equation-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px;
+  line-height: 1.5;
+}
+
+.equation-placeholder {
+  color: #999;
+  font-style: italic;
+  font-size: 1rem;
+  padding: 5px;
+}
+
+/* Base token styles */
+.equation-token {
+  position: relative;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--box-shadow-button);
+  white-space: nowrap;
+  min-height: 40px;
+  text-align: center;
+  vertical-align: middle;
+  animation: tokenAppear 0.3s ease-out;
+}
+
+.equation-token:hover {
+  transform: var(--hover-lift);
+  box-shadow: var(--box-shadow-button-hover);
+}
+
+/* Remove button - shared styles */
+.equation-token .token-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  opacity: 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.2s;
+  font-weight: normal;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.equation-token:hover .token-remove {
+  opacity: 1;
+}
+
+/* Token color schemes */
+.token-number {
+  background: var(--primary-blue-light);
+  color: var(--primary-blue-hover);
+  border: var(--border-width) solid var(--primary-blue-border);
+}
+
+.token-number:hover {
+  background: var(--primary-blue-border);
+}
+
+.token-number.multi-digit {
+  padding: 10px 18px;
+  min-width: 50px;
+  font-weight: 700;
+}
+
+.token-number.single-digit {
+  padding: 10px 16px;
+  min-width: 40px;
+}
+
+.token-operator-basic {
+  background: var(--success-green-light);
+  color: var(--success-green-dark);
+  border: var(--border-width) solid var(--success-green-border);
+}
+
+.token-operator-basic:hover {
+  background: var(--success-green-border);
+}
+
+.token-operator-intermediate {
+  background: var(--warning-orange-light);
+  color: var(--warning-orange);
+  border: var(--border-width) solid var(--warning-orange-border);
+}
+
+.token-operator-intermediate:hover {
+  background: var(--warning-orange-border);
+}
+
+.token-operator-advanced {
+  background: var(--advanced-purple-light);
+  color: var(--advanced-purple);
+  border: var(--border-width) solid var(--advanced-purple-border);
+}
+
+.token-operator-advanced:hover {
+  background: var(--advanced-purple-border);
+}
+
+/* Function tokens - all use advanced color scheme */
+.token-function-sqrt,
+.token-function-abs,
+.token-function-mod,
+.token-function-advanced {
+  background: var(--advanced-purple-light);
+  color: var(--advanced-purple);
+  border: var(--border-width) solid var(--advanced-purple-border);
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-function-sqrt:hover,
+.token-function-abs:hover,
+.token-function-mod:hover,
+.token-function-advanced:hover {
+  background: var(--advanced-purple-border);
+}
+
+/* Function call tokens - all use advanced color scheme */
+.token-function-call,
+.token-function-call-sqrt,
+.token-function-call-abs,
+.token-function-call-mod {
+  background: var(--advanced-purple-light);
+  color: var(--advanced-purple);
+  border: var(--border-width) solid var(--advanced-purple-border);
+  padding: 12px 16px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  min-height: 50px;
+}
+
+.token-function-call:hover,
+.token-function-call-sqrt:hover,
+.token-function-call-abs:hover,
+.token-function-call-mod:hover {
+  background: var(--advanced-purple-border);
+}
+
+/* Function call content styling */
+.token-function-call .function-content,
+.token-function-call-sqrt .function-content,
+.token-function-call-abs .function-content,
+.token-function-call-mod .function-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(123, 31, 162, 0.1);
+  border: 2px solid rgba(123, 31, 162, 0.1);
+  border-radius: 20px;
+  padding: 10px 16px;
+  min-height: 40px;
+}
+
+.token-function-call .function-content .equation-token {
+  font-size: 1.1rem !important;
+  padding: 10px 16px !important;
+  min-height: 40px !important;
+  border-radius: 20px !important;
+}
+
+.token-function-call .function-content .token-remove {
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+.token-function-call .function-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.token-function-call .function-paren-large,
+.token-function-call-sqrt .function-paren-large,
+.token-function-call-abs .function-paren-large,
+.token-function-call-mod .function-paren-large {
+  font-weight: bold;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: rgba(123, 31, 162, 0.9);
+}
+
+/* Function call remove buttons */
+.token-function-call .token-remove,
+.token-function-call-sqrt .token-remove,
+.token-function-call-abs .token-remove,
+.token-function-call-mod .token-remove {
+  color: rgba(123, 31, 162, 0.8);
+}
+
+/* Parentheses group styling */
+.token-parentheses-group {
+  background: #f5f5f5;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  padding: 12px 16px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  min-height: 50px;
+}
+
+.token-parentheses-group:hover {
+  background: #e0e0e0;
+}
+
+.token-parentheses-group .paren-large {
+  font-weight: bold;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: rgba(102, 102, 102, 0.95);
+}
+
+.token-parentheses-group .paren-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(102, 102, 102, 0.1);
+  border-radius: 20px;
+  padding: 10px 16px;
+  min-height: 40px;
+  border: 2px solid rgba(102, 102, 102, 0.1);
+}
+
+.token-parentheses-group .paren-content .equation-token {
+  font-size: 1.1rem !important;
+  padding: 10px 16px !important;
+  min-height: 40px !important;
+  border-radius: 20px !important;
+}
+
+.token-parentheses-group .paren-content .token-remove {
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+.token-parentheses-group .token-remove {
+  color: rgba(102, 102, 102, 0.8);
+}
+
+/* Punctuation styling */
+.token-punctuation {
+  background: #f5f5f5;
+  color: var(--text-medium);
+  border: var(--border-width) solid var(--gray-medium);
+}
+
+.token-punctuation:hover {
+  background: var(--gray-medium);
+}
+
+/* Equals sign - special rectangular styling */
+.token-equals {
+  background: var(--primary-blue-light);
+  color: var(--primary-blue-hover);
+  font-weight: bold;
+  border: var(--border-width) solid var(--primary-blue-border);
+  border-radius: var(--border-radius-button);
+  min-height: 40px;
+  min-width: 50px;
+  padding: 10px 16px;
+}
+
+.token-equals:hover {
+  background: var(--primary-blue-border);
+}
+
+/* Actions section */
+.equation-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.clear-equation-btn {
+  background: var(--error-red);
+  color: var(--text-white);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--border-radius-input);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.clear-equation-btn:hover {
+  background: var(--error-red-hover);
+  transform: var(--hover-lift);
+}
+
+/* Animation for new tokens */
+@keyframes tokenAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .equation-display {
+    padding: 12px;
+    min-height: 50px;
+  }
+  
+  .equation-token {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    gap: 4px;
+  }
+  
+  .equation-placeholder {
+    font-size: 0.9rem;
+  }
+  
+  .clear-equation-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}

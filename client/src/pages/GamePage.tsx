@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getCurrentDateNumbers, formatDateForDisplay, parseDate } from '../utils/dateUtils';
 import { validateCrackODateSolution, ValidationResult } from '../utils/mathParser';
@@ -6,8 +6,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { solutionsService } from '../services/solutionsService';
 import MathDisplay from '../components/MathDisplay';
 import DatePicker from '../components/DatePicker';
+import EquationBuilder from '../components/EquationBuilder';
 import '../components/MathDisplay.css';
 import '../components/DatePicker.css';
+import '../components/EquationBuilder.css';
 import './GamePage.css';
 
 const GamePage: React.FC = () => {
@@ -82,6 +84,33 @@ const GamePage: React.FC = () => {
     setUsedNumbers([]);
     setHasUsedEquals(false);
   };
+
+  const handleEquationChange = (newEquation: string) => {
+    setEquation(newEquation);
+    setHasUsedEquals(newEquation.includes('='));
+  };
+  
+  const handleDigitsChange = useCallback((digits: number[]) => {
+    console.log('GamePage: received digits:', digits);
+    console.log('GamePage: date numbers:', dateNumbers);
+    
+    // Check how many date numbers are used in correct order
+    const usedNums: number[] = [];
+    let digitIndex = 0;
+    
+    for (let dateIndex = 0; dateIndex < dateNumbers.length && digitIndex < digits.length; dateIndex++) {
+      console.log(`Comparing digit[${digitIndex}]=${digits[digitIndex]} with dateNumber[${dateIndex}]=${dateNumbers[dateIndex]}`);
+      if (digits[digitIndex] === dateNumbers[dateIndex]) {
+        usedNums.push(dateNumbers[dateIndex]);
+        digitIndex++;
+      } else {
+        break; // Stop at first mismatch
+      }
+    }
+    
+    console.log('GamePage: final usedNums:', usedNums);
+    setUsedNumbers(usedNums);
+  }, [dateNumbers]);
 
   const handleNumberClick = (number: number, index: number) => {
     // Only allow clicking if this is the next expected number
@@ -185,7 +214,7 @@ const GamePage: React.FC = () => {
         </div>
 
         <div className="operators-panel">
-          <h3>Mathematical Operators</h3>
+          <h2>Mathematical Operators</h2>
           <div className="operators-row">
             <button className="operator-btn basic" onClick={() => handleOperatorClick(' + ')}>+</button>
             <button className="operator-btn basic" onClick={() => handleOperatorClick(' - ')}>-</button>
@@ -197,7 +226,6 @@ const GamePage: React.FC = () => {
             <button className="operator-btn advanced" onClick={() => handleOperatorClick(' mod ')}>mod</button>
             <button className="operator-btn punctuation" onClick={() => handleOperatorClick('(')}>(</button>
             <button className="operator-btn punctuation" onClick={() => handleOperatorClick(')')}>)</button>
-            <button className="operator-btn space" onClick={() => handleOperatorClick(' ')}>space</button>
             <button
               className={`operator-btn equals ${hasUsedEquals ? 'used' : ''}`}
               onClick={() => handleOperatorClick(' = ')}
@@ -211,17 +239,26 @@ const GamePage: React.FC = () => {
         <form className="equation-form" onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="equation">Your Equation:</label>
-            {/* TODO: update the input to not just be a text field. Have the numbers and opperators show up like chips/buttons/bubbles something that looks better than just text in an input. */}
-            {/* TODO: allow the user to drag the numbers from todays numbers and the opperators into the equation area and drop them in place - Do this in a new branch called drag-and-drop */}
-            {/* TODO: allow the user to edit the equation by clicking on the chips/buttons/bubbles to remove them or dragging them to rearange them - Do this in a new branch called drag-and-drop*/}
-            <input
-              type="text"
-              id="equation"
-              value={equation}
-              onChange={(e) => setEquation(e.target.value)}
-              placeholder="e.g., 7 - 1 + 8 = 2^0 + 2 * 5"
-              className="equation-input"
+            <EquationBuilder
+              equation={equation}
+              onChange={handleEquationChange}
+              onClear={handleClear}
+              onDigitsChange={handleDigitsChange}
             />
+            {/* Fallback text input for manual editing */}
+            <details className="manual-input-toggle">
+              <summary>▼ Manual text input (advanced)</summary>
+              <div className="manual-input-content">
+                <input
+                  type="text"
+                  id="equation"
+                  value={equation}
+                  onChange={(e) => handleEquationChange(e.target.value)}
+                  placeholder="e.g., 7 - 1 + 8 = 2^0 + 2 * 5"
+                  className="equation-input"
+                />
+              </div>
+            </details>
           </div>
 
           <div className="button-group">
@@ -231,13 +268,6 @@ const GamePage: React.FC = () => {
               className="submit-button"
             >
               {isSubmitting ? 'Validating...' : 'Check Solution'}
-            </button>
-            <button
-              type="button"
-              onClick={handleClear}
-              className="clear-button"
-            >
-              Clear
             </button>
           </div>
         </form>
@@ -291,58 +321,6 @@ const GamePage: React.FC = () => {
           </div>
         )}
 
-        <div className="operators-guide">
-          <h3>Operators & Scoring</h3>
-          <div className="operators-grid">
-            <div className="operator-group basic-group">
-              <h4>Basic (1 point each)</h4>
-              <div className="operator-examples">
-                <div className="operator-example">
-                  <span className="operator">+</span>
-                  <span className="example">7 + 1 = 8</span>
-                </div>
-                <div className="operator-example">
-                  <span className="operator">-</span>
-                  <span className="example">8 - 2 = 6</span>
-                </div>
-              </div>
-            </div>
-            <div className="operator-group intermediate-group">
-              <h4>Intermediate (2 points each)</h4>
-              <div className="operator-examples">
-                <div className="operator-example">
-                  <span className="operator">×</span>
-                  <span className="example">7 × 1 = 7</span>
-                </div>
-                <div className="operator-example">
-                  <span className="operator">÷</span>
-                  <span className="example">8 ÷ 2 = 4</span>
-                </div>
-              </div>
-            </div>
-            <div className="operator-group advanced-group">
-              <h4>Advanced (3 points each)</h4>
-              <div className="operator-examples">
-                <div className="operator-example">
-                  <span className="operator">^</span>
-                  <span className="example">2 ^ 0 = 1</span>
-                </div>
-                <div className="operator-example">
-                  <span className="operator">√</span>
-                  <span className="example">sqrt(25) = 5</span>
-                </div>
-                <div className="operator-example">
-                  <span className="operator">|x|</span>
-                  <span className="example">abs(-7) = 7</span>
-                </div>
-                <div className="operator-example">
-                  <span className="operator">mod</span>
-                  <span className="example">8 mod 2 = 0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
