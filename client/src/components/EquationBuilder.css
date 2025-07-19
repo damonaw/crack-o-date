@@ -30,7 +30,7 @@
 }
 
 .equation-placeholder {
-  color: #999;
+  color: var(--text-light);
   font-style: italic;
   font-size: 1rem;
   padding: 5px;
@@ -69,10 +69,10 @@
   right: -4px;
   opacity: 0;
   font-size: 0.8rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-medium);
   transition: opacity 0.2s;
   font-weight: normal;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-card);
   border-radius: 50%;
   width: 16px;
   height: 16px;
@@ -193,8 +193,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(123, 31, 162, 0.1);
-  border: 2px solid rgba(123, 31, 162, 0.1);
+  background: var(--advanced-purple-light);
+  border: 2px solid var(--advanced-purple-border);
   border-radius: 20px;
   padding: 10px 16px;
   min-height: 40px;
@@ -224,7 +224,7 @@
   font-weight: bold;
   font-size: 1.8rem;
   line-height: 1;
-  color: rgba(123, 31, 162, 0.9);
+  color: var(--advanced-purple);
 }
 
 /* Function call remove buttons */
@@ -232,14 +232,14 @@
 .token-function-call-sqrt .token-remove,
 .token-function-call-abs .token-remove,
 .token-function-call-mod .token-remove {
-  color: rgba(123, 31, 162, 0.8);
+  color: var(--advanced-purple);
 }
 
 /* Parentheses group styling */
 .token-parentheses-group {
-  background: #f5f5f5;
-  color: #666;
-  border: 2px solid #e0e0e0;
+  background: var(--bg-input);
+  color: var(--text-medium);
+  border: 2px solid var(--gray-medium);
   padding: 12px 16px;
   border-radius: 24px;
   display: flex;
@@ -250,25 +250,25 @@
 }
 
 .token-parentheses-group:hover {
-  background: #e0e0e0;
+  background: var(--gray-medium);
 }
 
 .token-parentheses-group .paren-large {
   font-weight: bold;
   font-size: 1.8rem;
   line-height: 1;
-  color: rgba(102, 102, 102, 0.95);
+  color: var(--text-medium);
 }
 
 .token-parentheses-group .paren-content {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(102, 102, 102, 0.1);
+  background: var(--gray-light);
   border-radius: 20px;
   padding: 10px 16px;
   min-height: 40px;
-  border: 2px solid rgba(102, 102, 102, 0.1);
+  border: 2px solid var(--gray-light);
 }
 
 .token-parentheses-group .paren-content .equation-token {
@@ -284,12 +284,12 @@
 }
 
 .token-parentheses-group .token-remove {
-  color: rgba(102, 102, 102, 0.8);
+  color: var(--text-medium);
 }
 
 /* Punctuation styling */
 .token-punctuation {
-  background: #f5f5f5;
+  background: var(--bg-input);
   color: var(--text-medium);
   border: var(--border-width) solid var(--gray-medium);
 }

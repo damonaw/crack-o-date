@@ -147,7 +147,7 @@
 }
 
 .solution-card {
-  background: #f8f9fa;
+  background: var(--bg-card);
   padding: 20px;
   border-radius: var(--border-radius-card);
   border-left: 4px solid var(--primary-blue);
@@ -160,7 +160,7 @@
 }
 
 .solution-card.retroactive {
-  border-left-color: #ffa726;
+  border-left-color: var(--warning-orange);
   background: var(--warning-orange-light);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .solution-card.retroactive .solution-score {
-  background: #ffa726;
+  background: var(--warning-orange);
 }
 
 .solution-equation {

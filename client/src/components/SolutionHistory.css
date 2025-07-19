@@ -1,3 +1,6 @@
+/* Import shared variables from GamePage */
+@import url('../pages/GamePage.css');
+
 .solution-history {
   max-width: 1200px;
   margin: 0 auto;
@@ -6,7 +9,7 @@
 
 .solution-history h2 {
   text-align: center;
-  color: #333;
+  color: var(--text-dark);
   margin-bottom: 30px;
   font-size: 2rem;
 }
@@ -14,7 +17,7 @@
 .no-solutions {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-medium);
   font-style: italic;
 }
 
@@ -26,12 +29,13 @@
 }
 
 .solution-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius-card);
   padding: 25px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  border: 2px solid #e9ecef;
-  transition: all 0.3s ease;
+  box-shadow: var(--box-shadow-card);
+  border: var(--border-width) solid var(--gray-medium);
+  transition: var(--transition-fast);
+  color: var(--text-dark);
 }
 
 .solution-card:hover {
@@ -40,8 +44,8 @@
 }
 
 .solution-card.retroactive {
-  border-color: #ffa726;
-  background: #fffcf7;
+  border-color: var(--warning-orange);
+  background: var(--warning-orange-light);
 }
 
 .solution-header {
@@ -50,12 +54,12 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: var(--border-width) solid var(--gray-medium);
 }
 
 .solution-date {
   margin: 0;
-  color: #333;
+  color: var(--text-dark);
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -75,23 +79,23 @@
 }
 
 .score-badge.excellent {
-  background: #4caf50;
+  background: var(--success-green);
 }
 
 .score-badge.good {
-  background: #2196f3;
+  background: var(--primary-blue);
 }
 
 .score-badge.average {
-  background: #ff9800;
+  background: var(--warning-orange);
 }
 
 .score-badge.basic {
-  background: #9e9e9e;
+  background: var(--gray-dark);
 }
 
 .solution-time {
-  color: #666;
+  color: var(--text-medium);
   font-size: 0.9rem;
 }
 
@@ -100,8 +104,8 @@
 }
 
 .solution-verification {
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: var(--bg-input);
+  border-radius: var(--border-radius-button);
   padding: 15px;
   margin-top: 15px;
 }
@@ -116,22 +120,22 @@
 .verification-row:last-child {
   margin-bottom: 0;
   padding-top: 8px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--gray-medium);
 }
 
 .verification-label {
-  color: #666;
+  color: var(--text-medium);
   font-weight: 500;
 }
 
 .verification-value {
   font-family: 'Courier New', monospace;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .verification-success {
-  color: #4caf50;
+  color: var(--success-green);
   font-weight: 600;
 }
 
@@ -141,9 +145,9 @@
   gap: 8px;
   margin-top: 15px;
   padding: 10px;
-  background: #fff3e0;
-  border-radius: 6px;
-  color: #f57c00;
+  background: var(--warning-orange-light);
+  border-radius: var(--border-radius-input);
+  color: var(--warning-orange);
   font-size: 0.9rem;
 }
 

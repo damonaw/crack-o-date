@@ -1,3 +1,6 @@
+/* Import shared variables from GamePage */
+@import url('../pages/GamePage.css');
+
 .date-picker {
   position: relative;
   display: inline-block;
@@ -8,37 +11,38 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: white;
-  border: 2px solid #667eea;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--primary-blue);
+  border-radius: var(--border-radius-button);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--transition-fast);
   font-size: 1rem;
   font-weight: 500;
+  color: var(--text-dark);
 }
 
 .date-picker-button:hover {
-  background: #f8f9ff;
-  transform: translateY(-1px);
+  background: var(--primary-blue-light);
+  transform: var(--hover-lift);
 }
 
 .date-picker-button.today {
-  background: #667eea;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--text-white);
 }
 
 .date-picker-button.today:hover {
-  background: #5a6fd8;
+  background: var(--primary-blue-hover);
 }
 
 .date-picker-button.historical {
-  background: #fff3e0;
-  border-color: #ffa726;
-  color: #f57c00;
+  background: var(--warning-orange-light);
+  border-color: var(--warning-orange);
+  color: var(--warning-orange);
 }
 
 .date-picker-button.historical:hover {
-  background: #ffecb3;
+  background: var(--warning-orange-border);
 }
 
 .date-text {
@@ -46,8 +50,8 @@
 }
 
 .historical-badge {
-  background: #ffa726;
-  color: white;
+  background: var(--warning-orange);
+  color: var(--text-white);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -59,13 +63,14 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--gray-medium);
+  border-radius: var(--border-radius-card);
+  box-shadow: var(--box-shadow-card);
   z-index: 1000;
   margin-top: 8px;
   min-width: 320px;
+  color: var(--text-dark);
 }
 
 .date-picker-header {
@@ -73,12 +78,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--gray-medium);
 }
 
 .date-picker-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--text-dark);
   font-size: 1.1rem;
 }
 
@@ -87,7 +92,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
+  color: var(--text-medium);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -95,12 +100,12 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
 
 .close-button:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--gray-medium);
+  color: var(--text-dark);
 }
 
 .date-picker-content {
@@ -114,19 +119,19 @@
 .quick-action-btn {
   width: 100%;
   padding: 12px;
-  background: #667eea;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--text-white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius-button);
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: all 0.3s;
+  transition: var(--transition-fast);
 }
 
 .quick-action-btn:hover {
-  background: #5a6fd8;
-  transform: translateY(-1px);
+  background: var(--primary-blue-hover);
+  transform: var(--hover-lift);
 }
 
 .date-input-section {
@@ -137,34 +142,36 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .date-input-section input {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: var(--border-width) solid var(--gray-medium);
+  border-radius: var(--border-radius-button);
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: var(--transition-border);
+  background: var(--bg-input);
+  color: var(--text-dark);
 }
 
 .date-input-section input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--primary-blue);
+  box-shadow: var(--focus-shadow);
 }
 
 .date-picker-note {
-  background: #fff3e0;
-  border: 1px solid #ffa726;
-  border-radius: 8px;
+  background: var(--warning-orange-light);
+  border: 1px solid var(--warning-orange);
+  border-radius: var(--border-radius-button);
   padding: 12px;
 }
 
 .date-picker-note p {
   margin: 0;
-  color: #f57c00;
+  color: var(--warning-orange);
   font-size: 0.9rem;
   line-height: 1.4;
 }

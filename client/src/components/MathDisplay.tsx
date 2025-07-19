@@ -32,7 +32,7 @@ const MathDisplay: React.FC<MathDisplayProps> = ({ equation, className = '' }) =
       const html = katex.renderToString(formattedEquation, {
         displayMode: true,
         throwOnError: false,
-        errorColor: '#cc0000'
+        errorColor: 'var(--error-red)'
       });
       
       // Sanitize the HTML output to prevent XSS

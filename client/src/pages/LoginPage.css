@@ -57,7 +57,7 @@
 }
 
 .form-toggle button:not(.active) {
-  color: #666;
+  color: var(--text-medium);
 }
 
 .login-form {
@@ -74,29 +74,39 @@
 .form-group label {
   margin-bottom: 5px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dark);
 }
 
 .form-group input {
   padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: var(--border-width) solid var(--gray-medium);
+  border-radius: var(--border-radius-button);
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: var(--transition-border);
+  background: var(--bg-input) !important;
+  color: var(--text-dark) !important;
+}
+
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus,
+.form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--bg-input) inset !important;
+  -webkit-text-fill-color: var(--text-dark) !important;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--primary-blue);
+  box-shadow: var(--focus-shadow);
 }
 
 .submit-button {
-  background: #667eea;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--text-white);
   padding: 15px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius-button);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -105,23 +115,23 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background: #5a6fd8;
-  transform: translateY(-1px);
+  background: var(--primary-blue-hover);
+  transform: var(--hover-lift);
 }
 
 .submit-button:disabled {
-  background: #ccc;
+  background: var(--gray-light);
   cursor: not-allowed;
   transform: none;
 }
 
 .error-message {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--error-red-light);
+  color: var(--error-red-hover);
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-input);
   margin-bottom: 20px;
-  border: 1px solid #e57373;
+  border: 1px solid var(--error-red);
   text-align: center;
   font-size: 0.9rem;
 }
@@ -132,7 +142,7 @@
 }
 
 .login-links a {
-  color: #667eea;
+  color: var(--primary-blue);
   text-decoration: none;
   font-weight: 500;
 }

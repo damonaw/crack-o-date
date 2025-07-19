@@ -50,6 +50,7 @@
   
   --error-red: #f44336;
   --error-red-hover: #d32f2f;
+  --error-red-light: #ffebee;
   
   --text-dark: #333;
   --text-medium: #666;
@@ -63,6 +64,7 @@
   --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --bg-card: white;
   --bg-input: #fafafa;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.2);
 }
 
 /* Dark mode colors */
@@ -87,6 +89,7 @@
   
   --error-red: #f48fb1;
   --error-red-hover: #f06292;
+  --error-red-light: #2a1a1a;
   
   --text-dark: #e0e0e0;
   --text-medium: #b0b0b0;
@@ -98,8 +101,9 @@
   --gray-dark: #666;
   
   --bg-primary: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  --bg-card: #1e1e1e;
+  --bg-card: #2d2d2d;
   --bg-input: #2a2a2a;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.1);
 }
 
 /* Base Layout */
@@ -206,7 +210,7 @@
   color: var(--text-white);
   text-decoration: none;
   padding: 8px 16px;
-  border: var(--border-width) solid white;
+  border: var(--border-width) solid var(--text-white);
   border-radius: var(--border-radius-input);
   transition: var(--transition-normal);
   font-weight: 500;
@@ -221,12 +225,12 @@
 .profile-link:hover,
 .login-link:hover,
 .logout-btn:hover {
-  background: white;
+  background: var(--text-white);
   color: var(--primary-blue);
 }
 
 .logout-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--btn-secondary-bg);
 }
 
 /* Date and Content */
@@ -263,10 +267,12 @@
 .result-panel,
 .operators-panel,
 .operators-guide {
-  background: white;
+  background: var(--bg-card);
   border-radius: var(--border-radius-card);
   padding: var(--card-padding);
   margin-bottom: 30px;
+  color: var(--text-dark);
+  transition: background 0.3s ease, color 0.3s ease;
   box-shadow: var(--box-shadow-card);
 }
 
@@ -419,6 +425,8 @@
   font-size: 1.1rem;
   margin-bottom: 15px;
   transition: var(--transition-border);
+  background: var(--bg-input) !important;
+  color: var(--text-dark) !important;
 }
 
 .equation-input:focus {
@@ -646,9 +654,9 @@
 }
 
 .result.error {
-  background: #ffebee;
+  background: var(--error-red-light);
   color: var(--error-red-hover);
-  border: var(--border-width) solid #ffcdd2;
+  border: var(--border-width) solid var(--error-red);
 }
 
 .result.partial {
