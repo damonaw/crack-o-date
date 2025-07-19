@@ -46,46 +46,50 @@ Players must create mathematical equations using all the digits from today's dat
    cd crack-o-date
    ```
 
-2. **Install client dependencies**
+2. **Install all dependencies (recommended)**
    ```bash
-   cd client
-   npm install
+   npm run install:all
    ```
 
-3. **Install server dependencies**
+   *Or install individually:*
    ```bash
-   cd ../server
-   npm install
+   cd client && npm install
+   cd ../server && npm install
    ```
 
 ### Development
 
-**Start the backend server:**
+**Start both client and server (recommended):**
 ```bash
-cd server
 npm run dev
 ```
-Server runs on http://localhost:3001
+- Server runs on http://localhost:3001
+- Client runs on http://localhost:3000
 
-**Start the frontend client:**
+**Or start individually:**
 ```bash
-cd client
-npm start
+# Backend server
+npm run dev:server
+
+# Frontend client  
+npm run dev:client
 ```
-Client runs on http://localhost:3000
 
 ### Production Build
 
-**Build the client:**
+**Build everything:**
 ```bash
-cd client
 npm run build
 ```
 
-**Build and start the server:**
+**Or build individually:**
 ```bash
-cd server
-npm run build
+npm run build:client
+npm run build:server
+```
+
+**Start production server:**
+```bash
 npm start
 ```
 

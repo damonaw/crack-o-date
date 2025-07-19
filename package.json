@@ -1,0 +1,39 @@
+{
+  "name": "crack-o-date",
+  "version": "1.0.0",
+  "description": "A daily math puzzle web application where users create equations using the digits from today's date",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "npm run start --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspace=client && npm run build --workspace=server",
+    "build:client": "npm run build --workspace=client",
+    "build:server": "npm run build --workspace=server",
+    "start": "npm run start --workspace=server",
+    "test": "npm run test --workspace=client && npm run test --workspace=server",
+    "install:all": "npm install && npm install --workspace=client && npm install --workspace=server"
+  },
+  "keywords": [
+    "math",
+    "puzzle",
+    "game",
+    "daily",
+    "typescript",
+    "react",
+    "express"
+  ],
+  "author": "Damon",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  }
+}
