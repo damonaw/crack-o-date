@@ -1,0 +1,18 @@
+{
+  "short_name": "Crack-O-Date",
+  "name": "Crack-O-Date - Daily Math Puzzle",
+  "description": "Create equations using today's date digits in a daily math puzzle game",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["games", "education", "entertainment"]
+}

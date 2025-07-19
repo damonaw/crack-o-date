@@ -7,9 +7,11 @@ import { solutionsService } from '../services/solutionsService';
 import MathDisplay from '../components/MathDisplay';
 import DatePicker from '../components/DatePicker';
 import EquationBuilder from '../components/EquationBuilder';
+import DarkModeToggle from '../components/DarkModeToggle';
 import '../components/MathDisplay.css';
 import '../components/DatePicker.css';
 import '../components/EquationBuilder.css';
+import '../components/DarkModeToggle.css';
 import './GamePage.css';
 
 const GamePage: React.FC = () => {
@@ -162,10 +164,10 @@ const GamePage: React.FC = () => {
           {/* TODO: Update so that when crack-o-date cannot be shown all on the same line the username, profile button and logout button are moved down below the title. */}
           <h1>Crack-O-Date</h1>
           <div className="header-actions">
+            <DarkModeToggle />
             {user ? (
               <div className="user-menu">
                 <span className="username">Hello, {user.username}!</span>
-                {/* TODO: make profile link and logout button the same size */}
                 <Link to="/profile" className="profile-link">Profile</Link>
                 <button onClick={logout} className="logout-btn">Logout</button>
               </div>
@@ -247,7 +249,7 @@ const GamePage: React.FC = () => {
             />
             {/* Fallback text input for manual editing */}
             <details className="manual-input-toggle">
-              <summary>▼ Manual text input (advanced)</summary>
+              <summary>Manual text input (advanced)</summary>
               <div className="manual-input-content">
                 <input
                   type="text"

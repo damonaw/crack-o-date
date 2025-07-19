@@ -3,11 +3,12 @@
 
 .profile-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-blue) 0%, #764ba2 100%);
+  background: var(--bg-primary);
   padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
+  transition: background 0.3s ease;
 }
 
 .profile-container {
@@ -51,9 +52,11 @@
 .login-required,
 .stat-card,
 .solutions-section {
-  background: white;
+  background: var(--bg-card);
   border-radius: var(--border-radius-card);
   box-shadow: var(--box-shadow-card);
+  color: var(--text-dark);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .user-info {
@@ -190,7 +193,7 @@
   font-family: 'Courier New', monospace;
   font-size: 1.1rem;
   color: var(--text-dark);
-  background: white;
+  background: var(--bg-input);
   padding: 10px;
   border-radius: var(--border-radius-input);
   margin-bottom: 10px;

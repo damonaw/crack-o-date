@@ -10,7 +10,7 @@
   border: var(--border-width) solid var(--gray-medium);
   border-radius: var(--border-radius-button);
   padding: 20px;
-  background: #fafafa;
+  background: var(--bg-input);
   transition: var(--transition-border);
   margin-bottom: 15px;
 }

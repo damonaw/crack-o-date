@@ -170,7 +170,8 @@ const EquationBuilder: React.FC<EquationBuilderProps> = ({ equation, onChange, o
       console.log('EquationBuilder: extracted digits from tokens:', digits);
       onDigitsChange(digits);
     }
-  }, [tokens, onDigitsChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equation, onDigitsChange]);
   
   const removeToken = (tokenId: string) => {
     const filterTokens = (tokenList: EquationToken[]): EquationToken[] => {
