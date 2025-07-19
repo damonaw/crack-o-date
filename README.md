@@ -22,7 +22,7 @@ Players must create mathematical equations using all the digits from today's dat
 
 ### Backend (Express + TypeScript)
 - **Express.js** API server with TypeScript
-- **SQLite** database for persistent storage
+- **PostgreSQL** database with connection pooling
 - **JWT authentication** with bcrypt password hashing
 - **Rate limiting** and CORS protection
 
@@ -148,6 +148,174 @@ crack-o-date/
 - Rate limiting on API endpoints
 - CORS configuration for production deployment
 
+## 🐳 Docker Deployment
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Node.js 18+ for local development
+
+### Quick Start with Docker
+
+**Build and run all services:**
+```bash
+docker-compose up --build
+```
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+- Database: PostgreSQL (persisted in volume)
+
+**Production build:**
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+### Docker Architecture
+
+```
+Services:
+├── frontend (React) → nginx:alpine serving static build
+├── backend (Express.js) → node:18-alpine with TypeScript
+└── database (PostgreSQL) → persistent volume mount
+```
+
+## ☁️ Cloud Hosting Options
+
+### Google Cloud Platform
+
+#### Option 1: Cloud Run (Recommended)
+**Deploy React + Express.js as containers:**
+
+```bash
+# Build and push images
+docker build -t gcr.io/[PROJECT-ID]/crack-o-date-frontend ./client
+docker build -t gcr.io/[PROJECT-ID]/crack-o-date-backend ./server
+docker push gcr.io/[PROJECT-ID]/crack-o-date-frontend
+docker push gcr.io/[PROJECT-ID]/crack-o-date-backend
+
+# Deploy to Cloud Run
+gcloud run deploy crack-o-date-frontend --image gcr.io/[PROJECT-ID]/crack-o-date-frontend --platform managed
+gcloud run deploy crack-o-date-backend --image gcr.io/[PROJECT-ID]/crack-o-date-backend --platform managed
+```
+
+**Database:** Migrate to Cloud SQL PostgreSQL for production
+```bash
+gcloud sql instances create crack-o-date-db --database-version=POSTGRES_14 --tier=db-f1-micro --region=us-central1
+```
+
+#### Option 2: Firebase Hosting + Cloud Functions
+- Frontend: Firebase Hosting for React build
+- Backend: Cloud Functions for API endpoints
+- Database: Firestore or Cloud SQL
+
+### Amazon Web Services (AWS)
+
+#### Option 1: ECS with Fargate
+**Deploy containerized services:**
+
+```bash
+# Push to ECR
+aws ecr create-repository --repository-name crack-o-date-frontend
+aws ecr create-repository --repository-name crack-o-date-backend
+docker tag crack-o-date-frontend:latest [ACCOUNT].dkr.ecr.[REGION].amazonaws.com/crack-o-date-frontend:latest
+docker push [ACCOUNT].dkr.ecr.[REGION].amazonaws.com/crack-o-date-frontend:latest
+```
+
+**Database:** Amazon RDS PostgreSQL
+```bash
+aws rds create-db-instance --db-instance-identifier crack-o-date-db --db-instance-class db.t3.micro --engine postgres
+```
+
+#### Option 2: AWS Amplify
+- Full-stack deployment with git integration
+- Built-in CI/CD pipeline
+- Managed database with GraphQL API
+
+### Alternative Platforms
+
+#### Render (Simple Deployment)
+- PostgreSQL addon available
+- Automatic deploys from Git
+- Simple scaling and monitoring
+
+#### Railway
+- Simple container deployment
+- One-click PostgreSQL
+- Automatic SSL certificates
+
+#### Vercel + PlanetScale
+- Frontend: Vercel (optimal for React)
+- Backend: Vercel serverless functions
+- Database: PlanetScale MySQL
+
+## 📱 Mobile App Considerations
+
+### Architecture for Mobile + Web
+
+When porting to React Native/Expo, consider this architecture:
+
+```
+Frontend Clients:
+├── Web App (React) → Static hosting (Vercel/Netlify)
+├── iOS App (React Native) → App Store
+└── Android App (React Native) → Google Play Store
+
+Shared Backend:
+├── API Server (Express.js) → Container hosting
+├── Database (PostgreSQL) → Managed database
+├── File Storage (S3/Cloud Storage) → For user uploads
+└── Push Notifications (FCM/SNS) → For engagement
+```
+
+### Mobile-Specific Hosting Requirements
+
+#### API Changes Needed
+- **Global CDN**: Lower latency for worldwide users
+- **Auto-scaling**: Handle mobile traffic spikes
+- **Offline Support**: Data synchronization strategies
+- **File Upload**: Image/avatar handling for mobile
+- **Push Notifications**: User engagement features
+
+#### Recommended Mobile Stack
+1. **EAS Hosting (Expo)**: Full-stack deployment for Expo apps
+2. **AWS Amplify**: Mobile-optimized with offline sync
+3. **Firebase + Cloud Run**: Google's mobile-first approach
+4. **Supabase**: Open-source with excellent mobile SDKs
+
+### Database Benefits for Mobile
+
+**PostgreSQL advantages for mobile apps:**
+```sql
+-- Better mobile app support with concurrent connections
+-- JSON columns for flexible mobile data structures
+-- Real-time subscriptions for live updates
+-- Built-in auth and row-level security
+-- Horizontal scaling for global user base
+```
+
+## 🚀 Production Environment Setup
+
+### Environment Variables
+```bash
+# Backend (.env)
+DATABASE_URL=postgresql://user:password@host:5432/crack_o_date
+JWT_SECRET=your-super-secret-jwt-key
+NODE_ENV=production
+PORT=3001
+CORS_ORIGIN=https://your-frontend-domain.com
+
+# Frontend (.env.production)
+REACT_APP_API_URL=https://your-backend-domain.com
+REACT_APP_ENV=production
+```
+
+### Security Checklist
+- [ ] Enable HTTPS/SSL certificates
+- [ ] Configure CORS for production domains
+- [ ] Set up rate limiting
+- [ ] Use environment variables for secrets
+- [ ] Enable database connection pooling
+- [ ] Set up monitoring and logging
+
 ## 📋 TODO List
 
 ### UI/UX Improvements
@@ -160,6 +328,13 @@ crack-o-date/
 - [ ] Historical date puzzle solving
 - [ ] User statistics and leaderboards
 - [ ] Social sharing of solutions
+
+### Infrastructure
+- [x] Database migration to PostgreSQL ✅
+- [ ] Set up CI/CD pipeline
+- [ ] Implement caching layer (Redis)
+- [ ] Add monitoring and alerting
+- [ ] Mobile app development (React Native/Expo)
 
 ## 🤝 Contributing
 

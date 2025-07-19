@@ -10,10 +10,13 @@ import { createSolutionsRoutes } from './routes/solutions';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Rate limiting
+// Rate limiting with environment configuration
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // 100 requests default
+  message: {
+    error: 'Too many requests from this IP, please try again later.'
+  }
 });
 
 app.use(limiter);
@@ -21,7 +24,7 @@ app.use(limiter);
 // Configure CORS for security
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com']
+    ? process.env.CORS_ORIGIN?.split(',') || ['https://yourdomain.com']
     : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -37,7 +40,11 @@ async function startServer() {
     const db = await initializeDatabase();
     console.log('Database initialized successfully');
 
-    // Routes
+    // Health check route
+    app.get('/health', (req, res) => {
+      res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    });
+    
     app.get('/api/health', (req, res) => {
       res.json({ status: 'OK', timestamp: new Date().toISOString() });
     });
