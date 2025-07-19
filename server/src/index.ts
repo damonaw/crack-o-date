@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import { initializeDatabase } from './database';
 import { createAuthRoutes } from './routes/auth';
 import { createSolutionsRoutes } from './routes/solutions';
@@ -15,8 +16,19 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(cors());
-app.use(express.json());
+
+// Configure CORS for security
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com']
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json({ limit: '10mb' }));
 
 // Initialize database and routes
 async function startServer() {

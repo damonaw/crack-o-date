@@ -8,7 +8,6 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -21,30 +20,24 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
   const validateToken = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        method: 'GET',
+        credentials: 'include', // Include httpOnly cookies
       });
 
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
       } else {
-        // Token is invalid, remove it
-        localStorage.removeItem('token');
-        setToken(null);
+        // Token is invalid, clear user
         setUser(null);
       }
     } catch (error) {
       console.error('Token validation error:', error);
-      localStorage.removeItem('token');
-      setToken(null);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -52,13 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    if (token) {
-      validateToken();
-    } else {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    validateToken();
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
@@ -67,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include httpOnly cookies
         body: JSON.stringify({ email, password })
       });
 
@@ -76,9 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const data = await response.json();
-      setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('token', data.token);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -92,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include httpOnly cookies
         body: JSON.stringify({ username, email, password })
       });
 
@@ -101,23 +89,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const data = await response.json();
-      setToken(data.token);
       setUser(data.user);
-      localStorage.setItem('token', data.token);
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // Include httpOnly cookies
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

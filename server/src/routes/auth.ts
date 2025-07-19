@@ -16,8 +16,20 @@ export function createAuthRoutes(db: Database) {
         return res.status(400).json({ error: 'Username, email, and password are required' });
       }
 
-      if (password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+      // Validate password complexity
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      }
+      
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /\d/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+        return res.status(400).json({ 
+          error: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character' 
+        });
       }
 
       // Check if user already exists
@@ -27,7 +39,7 @@ export function createAuthRoutes(db: Database) {
       );
 
       if (existingUser) {
-        return res.status(400).json({ error: 'Username or email already exists' });
+        return res.status(400).json({ error: 'Account already exists' });
       }
 
       // Hash password
@@ -43,9 +55,16 @@ export function createAuthRoutes(db: Database) {
       // Generate token
       const token = generateToken(result.lastID);
 
+      // Set httpOnly cookie for security
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
       res.status(201).json({
         message: 'User created successfully',
-        token,
         user: {
           id: result.lastID,
           username,
@@ -87,9 +106,16 @@ export function createAuthRoutes(db: Database) {
       // Generate token
       const token = generateToken(user.id);
 
+      // Set httpOnly cookie for security
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
       res.json({
         message: 'Login successful',
-        token,
         user: {
           id: user.id,
           username: user.username,
@@ -105,8 +131,8 @@ export function createAuthRoutes(db: Database) {
   // Get current user
   router.get('/me', async (req, res) => {
     try {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
+      // Try to get token from httpOnly cookie first, then fallback to Authorization header
+      const token = req.cookies.token || (req.headers['authorization']?.split(' ')[1]);
 
       if (!token) {
         return res.status(401).json({ error: 'Access token required' });
@@ -114,7 +140,11 @@ export function createAuthRoutes(db: Database) {
 
       // This would normally use the auth middleware, but for simplicity:
       const jwt = require('jsonwebtoken');
-      const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+      const JWT_SECRET = process.env.JWT_SECRET;
+      
+      if (!JWT_SECRET) {
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
       
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -136,6 +166,12 @@ export function createAuthRoutes(db: Database) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  });
+
+  // Logout user
+  router.post('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.json({ message: 'Logged out successfully' });
   });
 
   return router;

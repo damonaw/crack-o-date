@@ -1,6 +1,7 @@
 import React from 'react';
 import 'katex/dist/katex.min.css';
 import katex from 'katex';
+import DOMPurify from 'dompurify';
 
 interface MathDisplayProps {
   equation: string;
@@ -33,10 +34,15 @@ const MathDisplay: React.FC<MathDisplayProps> = ({ equation, className = '' }) =
         throwOnError: false,
         errorColor: '#cc0000'
       });
-      return { __html: html };
+      
+      // Sanitize the HTML output to prevent XSS
+      const sanitizedHtml = DOMPurify.sanitize(html);
+      return { __html: sanitizedHtml };
     } catch (error) {
       console.error('KaTeX rendering error:', error);
-      return { __html: `<span class="katex-error">${equation}</span>` };
+      // Sanitize the fallback content as well
+      const sanitizedEquation = DOMPurify.sanitize(equation);
+      return { __html: `<span class="katex-error">${sanitizedEquation}</span>` };
     }
   };
 

@@ -35,20 +35,21 @@ export interface UserStats {
 }
 
 export class SolutionsService {
-  private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('token');
+  private getRequestOptions(method: string = 'GET', body?: string): RequestInit {
     return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include httpOnly cookies
+      ...(body && { body })
     };
   }
 
   async submitSolution(solutionData: SolutionData): Promise<Solution> {
-    const response = await fetch(`${API_BASE_URL}/solutions`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(solutionData)
-    });
+    const response = await fetch(`${API_BASE_URL}/solutions`, 
+      this.getRequestOptions('POST', JSON.stringify(solutionData))
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -68,9 +69,9 @@ export class SolutionsService {
       pages: number;
     };
   }> {
-    const response = await fetch(`${API_BASE_URL}/solutions?page=${page}&limit=${limit}`, {
-      headers: this.getAuthHeaders()
-    });
+    const response = await fetch(`${API_BASE_URL}/solutions?page=${page}&limit=${limit}`, 
+      this.getRequestOptions()
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -81,9 +82,9 @@ export class SolutionsService {
   }
 
   async getUserStats(): Promise<UserStats> {
-    const response = await fetch(`${API_BASE_URL}/solutions/stats`, {
-      headers: this.getAuthHeaders()
-    });
+    const response = await fetch(`${API_BASE_URL}/solutions/stats`, 
+      this.getRequestOptions()
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
