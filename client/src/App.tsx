@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
 import GamePage from './pages/GamePage';
@@ -7,6 +7,9 @@ import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 
 function App() {
+  // Use HashRouter for GitHub Pages, BrowserRouter for local development
+  const Router = window.location.hostname === 'damonaw.github.io' ? HashRouter : BrowserRouter;
+  
   return (
     <AuthProvider>
       <Router>
