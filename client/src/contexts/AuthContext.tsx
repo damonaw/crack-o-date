@@ -24,6 +24,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const validateToken = async () => {
     try {
+      // Skip API calls when deployed to GitHub Pages (no backend available)
+      if (window.location.hostname === 'damonaw.github.io') {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         credentials: 'include', // Include httpOnly cookies
@@ -50,6 +57,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
+      // Demo mode for GitHub Pages
+      if (window.location.hostname === 'damonaw.github.io') {
+        throw new Error('Authentication not available in demo mode');
+      }
+
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -74,6 +86,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (username: string, email: string, password: string) => {
     try {
+      // Demo mode for GitHub Pages
+      if (window.location.hostname === 'damonaw.github.io') {
+        throw new Error('Authentication not available in demo mode');
+      }
+
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {

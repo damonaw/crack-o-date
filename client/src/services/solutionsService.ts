@@ -47,6 +47,24 @@ export class SolutionsService {
   }
 
   async submitSolution(solutionData: SolutionData): Promise<Solution> {
+    // Demo mode for GitHub Pages
+    if (window.location.hostname === 'damonaw.github.io') {
+      // Return a mock solution for demo purposes
+      return {
+        id: Math.floor(Math.random() * 1000),
+        user_id: 1,
+        puzzle_date_id: 1,
+        equation: solutionData.equation,
+        score: solutionData.score,
+        left_value: solutionData.leftValue,
+        right_value: solutionData.rightValue,
+        is_retroactive: solutionData.isRetroactive,
+        created_at: new Date().toISOString(),
+        date_string: solutionData.dateString,
+        date_numbers: solutionData.dateNumbers
+      };
+    }
+
     const response = await fetch(`${API_BASE_URL}/solutions`, 
       this.getRequestOptions('POST', JSON.stringify(solutionData))
     );
@@ -69,6 +87,14 @@ export class SolutionsService {
       pages: number;
     };
   }> {
+    // Demo mode for GitHub Pages
+    if (window.location.hostname === 'damonaw.github.io') {
+      return {
+        solutions: [],
+        pagination: { page: 1, limit: 10, total: 0, pages: 0 }
+      };
+    }
+
     const response = await fetch(`${API_BASE_URL}/solutions?page=${page}&limit=${limit}`, 
       this.getRequestOptions()
     );
@@ -82,6 +108,17 @@ export class SolutionsService {
   }
 
   async getUserStats(): Promise<UserStats> {
+    // Demo mode for GitHub Pages
+    if (window.location.hostname === 'damonaw.github.io') {
+      return {
+        total_solutions: 0,
+        current_solutions: 0,
+        total_score: 0,
+        average_score: 0,
+        highest_score: 0
+      };
+    }
+
     const response = await fetch(`${API_BASE_URL}/solutions/stats`, 
       this.getRequestOptions()
     );
